@@ -25,7 +25,7 @@ _on linux/mac_
 Sample python code : 
 
 ```
-from HyperAPI.hdp_api import Router
+from hdp_lib_api import Router
 api = Router(token="USER_TOKEN", url="https://trial.hcube.io")
 
 ```
