@@ -2,6 +2,9 @@
 
 ## Version 7
 
+### 7.0.11 
+- Fix keep variable method
+
 ### 7.0.9 
 - Adding Time Series Forecasting Model
 

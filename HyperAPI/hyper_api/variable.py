@@ -167,7 +167,7 @@ class Variable(Base):
             data = {'updateFields': {varname: {'ignored': False }}}
             returned_json = self.__api.Datasets.metadata(project_ID=self.project_id, dataset_ID=self.dataset_id, json=data)
             self.__json_returned['ignored'] = list(filter(lambda x: x.get('varName') == self.name, returned_json['metadata']['variables']))[0].get('ignored')
-        elif not self.is_ignored:
+        elif self.is_ignored:
             data = {'changedMetadata': [self.name]}
             self.__api.Datasets.metadata(project_ID=self.project_id, dataset_ID=self.dataset_id, json=data)
             self.__json_returned = self._update()
