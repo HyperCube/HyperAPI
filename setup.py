@@ -23,6 +23,7 @@ class hyperAPI_builder(build_py):
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
+    requirements = list(_r for _r in requirements if not _r.startswith('./'))
 
 with open('package_metadata.json') as m:
     setup_metadata = json.load(m)

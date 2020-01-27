@@ -1,5 +1,14 @@
 # HyperAPI Changelog
 
+## Version 8
+
+### 8.0.0
+- Removed router to use external hdp_lib_api module instead
+- Add released hdp_lib_api module as HyperAPI_routes package in the sources
+    ./resources/HyperAPI_routes-1-py3-none-any.whl
+
+- Fixed dataset and project creation date compatibility to HC 4.3 versions
+
 ## Version 7
 
 ### 7.0.11 

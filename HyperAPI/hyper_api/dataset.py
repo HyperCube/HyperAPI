@@ -387,12 +387,11 @@ class Dataset(Base):
             self.dataset_id
         ) + ("\t<This is the default Dataset>\n" if self.is_default else "") + \
             ("\t<! This dataset has been deleted>\n" if self._is_deleted else "") + \
-            """\t- Description : {}\n\t- Size : {} bytes\n\t- Created on : {}\n\t- Modified on : {}\n\t- Source filename : {}\n""".format(
+            """\t- Description : {}\n\t- Size : {} bytes\n\t- Created on : {}\n\t- Modified on : {}\n""".format(
             self.description,
             self.size,
-            self.created.strftime('%Y-%m-%d %H:%M:%S UTC'),
-            self.modified.strftime('%Y-%m-%d %H:%M:%S UTC') if self.modified is not None else "N/A",
-            self.source_file_name)
+            self.created.strftime('%Y-%m-%d %H:%M:%S UTC') if self.created is not None else "N/A",
+            self.modified.strftime('%Y-%m-%d %H:%M:%S UTC') if self.modified is not None else "N/A")
 
     # Factory part
     @property
@@ -450,7 +449,16 @@ class Dataset(Base):
 
     @property
     def created(self):
-        return self.str2date(self.__json_returned.get('createdOn'), '%Y-%m-%dT%H:%M:%S.%fZ')
+        created_date = None
+        if 'createdOn' in self.__json_returned.keys():
+            created_date = self.__json_returned.get('createdOn')
+        elif 'created' in self.__json_returned.keys():
+            created_date = self.__json_returned.get('created')
+        else:
+            return None
+        if isinstance(created_date, int):
+            return self.timestamp2date(created_date)
+        return self.str2date(created_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
     @property
     def modified(self):
@@ -649,7 +657,7 @@ class Dataset(Base):
         """
         if not self._is_deleted:
             return self.__api.Datasets.exportmetadata(project_ID=self.project_id,
-                                                  dataset_ID=self.dataset_id)
+                                                      dataset_ID=self.dataset_id)
 
     @Helper.try_catch
     def get_discreteDict(self):
@@ -658,7 +666,7 @@ class Dataset(Base):
         """
         if not self._is_deleted:
             return self.__api.Datasets.exportdiscretedict(project_ID=self.project_id,
-                                                  dataset_ID=self.dataset_id)
+                                                          dataset_ID=self.dataset_id)
 
     @Helper.try_catch
     def encode_dataframe(self, name, dataframe, description='', modalities=2,
@@ -678,17 +686,17 @@ class Dataset(Base):
         '''
         metadata = self.get_metadata()
         oldNames = set([
-                str(var.get("varName", '')).strip().replace("\n", "")
-                for var in metadata.get("variables")
-            ])
+            str(var.get("varName", '')).strip().replace("\n", "")
+            for var in metadata.get("variables")
+        ])
         newNames = set([
-                str(var).strip().replace("\n", "")
-                for var in dataframe.columns
-            ])
-        keepVariableName =  'true' if newNames <= oldNames else 'false'
+            str(var).strip().replace("\n", "")
+            for var in dataframe.columns
+        ])
+        keepVariableName = 'true' if newNames <= oldNames else 'false'
         discreteDict = self.get_discreteDict()
-        dataset = DatasetFactory(self.__api, self.project_id).create_from_dataframe(name, dataframe,  
-                    description=description, modalities=modalities,  
-                   continuous_threshold=continuous_threshold, missing_threshold=missing_threshold, 
-                    metadata=metadata, discreteDict=discreteDict, keepVariableName=keepVariableName)
+        dataset = DatasetFactory(self.__api, self.project_id).create_from_dataframe(name, dataframe,
+                                                                                    description=description, modalities=modalities,
+                                                                                    continuous_threshold=continuous_threshold, missing_threshold=missing_threshold,
+                                                                                    metadata=metadata, discreteDict=discreteDict, keepVariableName=keepVariableName)
         return dataset

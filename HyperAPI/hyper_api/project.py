@@ -93,7 +93,7 @@ class ProjectFactory:
             Project
         """
         if self.__api.session.version >= self.__api.session.version.__class__('3.6'):
-            defaultProjectId = self.__api.Settings._getusersettings().get('defaultProjectId')
+            defaultProjectId = self.__api.Settings.getusersettings().get('defaultProjectId')
         else:
             defaultProjectId = self.__api.Projects.projects().get('defaultProject')
 
@@ -225,7 +225,7 @@ class Project(Base):
         Returns a boolean indicating if this project is the default project.
         """
         if self.__api.session.version >= self.__api.session.version.__class__('3.6'):
-            defaultProjectId = self.__api.Settings._getusersettings().get('defaultProjectId')
+            defaultProjectId = self.__api.Settings.getusersettings().get('defaultProjectId')
         else:
             defaultProjectId = self.__api.Projects.projects().get('defaultProject')
 
@@ -318,7 +318,16 @@ class Project(Base):
         """
         Creation date of this project.
         """
-        return self.str2date(self.__json_returned.get('createdOn'), '%Y-%m-%dT%H:%M:%S.%fZ')
+        created_date = None
+        if 'createdOn' in self.__json_returned.keys():
+            created_date = self.__json_returned.get('createdOn')
+        elif 'created' in self.__json_returned.keys():
+            created_date = self.__json_returned.get('created')
+        else:
+            return None
+        if isinstance(created_date, int):
+            return self.timestamp2date(created_date)
+        return self.str2date(created_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
     # Methods part
     @Helper.try_catch
