@@ -15,6 +15,7 @@ phases:
     commands:
       - echo "Running Unit Tests"
       - pip install pyjwt
+      - pip install -r $CODEBUILD_SRC_DIR/requirements.txt
       - python -m unittest discover -s $CODEBUILD_SRC_DIR/tests -p "*_test.py" -v
       - echo "Logging into Amazon ECR..."
       - $(aws ecr get-login --no-include-email --region eu-central-1)

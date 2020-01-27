@@ -1,6 +1,6 @@
 import unittest
 from hdp_lib_api import Router
-from HyperAPI.utils.version import Version
+from hdp_lib_api.utils.version import Version
 import json
 import pathlib
 
