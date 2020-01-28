@@ -122,7 +122,11 @@ class ProjectFactory:
         Returns:
             Project
         """
-        return self.get(name) or self.create(name, description, type_id, wait)
+        _res = self.get(name)
+        if _res is None:
+            self.create(name, description, type_id, wait)
+            _res = self.get(name)
+        return _res
 
 
 class Project(Base):
@@ -186,7 +190,7 @@ class Project(Base):
             An object of type ModelFactory
         """
         return ModelFactory(self.__api, self.project_id)
-    
+
     @property
     def AutomatedModel(self):
         """
@@ -195,7 +199,10 @@ class Project(Base):
         Returns:
             An object of type ModelFactory
         """
-        return AutomatedModelFactory(self.__api, self.project_id)
+        if hasattr(self.__api, 'AutomatedPrediction'):
+            return AutomatedModelFactory(self.__api, self.project_id)
+        else:
+            raise NotImplementedError('The feature is not available on this platform')
 
     @property
     def Xray(self):
@@ -238,10 +245,6 @@ class Project(Base):
     @property
     def user_name(self):
         return self.__json_returned.get('userName')
-
-    @property
-    def workflow_id(self):
-        return self.__json_returned.get('workflowId')
 
     @property
     def datasets(self):
@@ -293,11 +296,11 @@ class Project(Base):
 
     @property
     def share_users(self):
-        return [u['username'] for u in self.__json_returned.get('shareUsers')]
+        raise NotImplementedError('The feature is not available on this platform')
 
     @property
     def share_users_ids(self):
-        return [u['_id'] for u in self.__json_returned.get('shareUsers')]
+        raise NotImplementedError('The feature is not available on this platform')
 
     @property
     def description(self):
@@ -305,13 +308,6 @@ class Project(Base):
         The project description.
         """
         return self.__json_returned.get('description')
-
-    @property
-    def default_dataset_id(self):
-        """
-        The default dataset's ID.
-        """
-        return self.__json_returned.get('defaultDatasetId')        
 
     @property
     def created(self):
@@ -364,6 +360,8 @@ class Project(Base):
 
     @Helper.try_catch
     def share_with_user(self, username, add=True):
+        raise NotImplementedError('The feature is not available on this platform')
+
         if (username in self.share_users and add) or (username not in self.share_users and not add):
             # Nothing to do
             return self
