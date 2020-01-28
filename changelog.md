@@ -17,7 +17,14 @@
     - `share_users`
     - `share_users_ids`
     - `share_with_user`
-- AutomatedModels Project property's availability is now tied to the platform version. 
+- `AutomatedModels` Project property's availability is now tied to the platform version. 
+
+- Update Dataset `create` method to use the most correct syntax for delimiter ie 'semicolon'
+- Correct representation of Dataset instance when dataset is deleted
+- Updated Dataset `split` method docstring
+
+- `get_discreteDict` and `encode_dataframe` Dataset methods availability are now tied to the platform version. 
+
 
 ## Version 7
 
