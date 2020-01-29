@@ -336,12 +336,17 @@ class RulesetFactory:
             "params": {
                 "query": "tagsfilter={}".format(urllib.parse.quote(ruleset.name)),
                 "taglist": [ruleset.name],
-                "kpisList": ruleset.kpis,
-                "kpiId": decode_kpiname_to_id(ruleset.kpis, score_to_minimize),
                 "incrementThreshold": increment_threshold,
                 "tag": minimization_name
             }
         }
+        _kpiId = decode_kpiname_to_id(ruleset.kpis, score_to_minimize)
+        if _kpiId != score_to_minimize:
+            json['params']['kpiId'] = _kpiId
+
+        _kpi_corr = self.__api.Kpi.getkpicorrelation(project_ID=ruleset.project_id)
+        json['params']['kpisList'] = _kpi_corr
+
         _ruleset = self.__api.Task.createtask(project_ID=ruleset.project_id, json=json)
         self.__api.handle_work_states(ruleset.project_id, work_type='minimization', work_id=_ruleset.get('_id'))
         return self.get(minimization_name)
@@ -497,7 +502,10 @@ class Ruleset(Base):
 
     @property
     def created(self):
-        return self.str2date(self.__json_returned.get('lastChangeAt', self.__json_returned.get('createdAt')), '%Y-%m-%dT%H:%M:%S.%fZ')
+        createdAt = self.__json_returned.get('lastChangeAt', self.__json_returned.get('createdAt'))
+        if createdAt.find('.') > 0:
+            return self.str2date(createdAt, '%Y-%m-%dT%H:%M:%S.%fZ')
+        return self.str2date(createdAt, '%Y-%m-%dT%H:%M:%S')
 
     @property
     def id(self):

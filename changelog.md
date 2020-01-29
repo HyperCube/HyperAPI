@@ -25,6 +25,17 @@
 
 - `get_discreteDict` and `encode_dataframe` Dataset methods availability are now tied to the platform version. 
 
+- `update` Target method availability is now tied to the platform version. 
+
+- Fixed Ruleset `minimize` method when using size as score
+
+- The following ModelFactory methods are now tied to the platform version:
+    - `create_XGBRegressor`
+    - `create_Lasso`
+    - `create_Perceptron`
+    - `create_TimeSeriesForecaster`
+
+- The methods `preprocess_data` for ClassifierModel and RegressorModel are now tied to the platform version
 
 ## Version 7
 

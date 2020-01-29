@@ -678,6 +678,10 @@ class ModelFactory:
         Returns:
             the created model
         """
+
+        if self.__api.session.version < self.__api.session.version.__class__('4.2.10'):
+            raise NotImplementedError('The feature is not available on this platform')
+
         hyperParameters = {'n_estimators': n_estimators, 'learning_rate': 0.1, 'max_depth': maxdepth}
         discretizations = {}
         if enable_custom_discretizations is True:
@@ -718,6 +722,10 @@ class ModelFactory:
         Returns:
             the created model
         """
+
+        if self.__api.session.version < self.__api.session.version.__class__('4.2.10'):
+            raise NotImplementedError('The feature is not available on this platform')
+
         hyperParameters = {'max_iter': max_iter, 'tol': tol, 'alpha': alpha, 'fit_intercept': fit_intercept, 
                            'normalize': normalize}
         discretizations = {}
@@ -737,8 +745,8 @@ class ModelFactory:
 
     @Helper.try_catch
     def create_Perceptron(self, dataset, name, target, penalty=None, alpha=1e-4,fit_intercept=True, max_iter=1000, tol=1e-3,
-                            class_weight='balanced', method='isotonic', split_ratio=0.7, enable_custom_discretizations=True,
-                            nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median'):
+                          class_weight='balanced', method='isotonic', split_ratio=0.7, enable_custom_discretizations=True,
+                          nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median'):
         """
         Create a Perceptron classifier model
 
@@ -766,8 +774,12 @@ class ModelFactory:
         Returns:
             the created model
         """
+
+        if self.__api.session.version < self.__api.session.version.__class__('4.2.10'):
+            raise NotImplementedError('The feature is not available on this platform')
+
         hyperParameters = {'penalty': penalty, 'alpha': alpha, 'max_iter': max_iter, 'tol': tol, 'class_weight': class_weight, 
-                            'fit_intercept': fit_intercept, 'method': method}
+                           'fit_intercept': fit_intercept, 'method': method}
 
         discretizations = {}
         if enable_custom_discretizations is True:
@@ -883,6 +895,10 @@ class ModelFactory:
         Returns:
             the created model
         """
+
+        if self.__api.session.version < self.__api.session.version.__class__('4.2.10'):
+            raise NotImplementedError('The feature is not available on this platform')
+
         # case empty regressor entry
         try: 
             assert(len(regressor)!=0)
@@ -1057,6 +1073,10 @@ class ClassifierModel(Model):
         Returns:
             preprocessed dataframe
         """
+        
+        if not hasattr(self.__api.Prediction, "exportpreprocesseddata"):
+            raise NotImplementedError('The feature is not available on this platform')
+
         pd = get_required_module('pandas')
 
         if self.algoType == AlgoTypes.HYPERCUBE:
@@ -1151,7 +1171,16 @@ class ClassifierModel(Model):
             self.__json_confusion_matrix = self.__api.Prediction.getconfusionmatrix(**json)
 
     @Helper.try_catch
-    def get_confusion_matrix(self, top_score_ratio):
+    def get_confusion_matrix(self, top_score_ratio=0.1):
+        """
+        Get the Confusion Matrix
+
+        Args:
+            top_score_ratio (float): must be greater or equal to 0 and lower or equal to 1, default=0.1.
+
+        Returns:
+            ConfusionMatrix
+        """
         if not 0 <= top_score_ratio <= 1:
             raise ApiException('top_score_ratio must be greater or equal to 0 and lower or equal to 1')
 
@@ -1385,6 +1414,10 @@ class RegressorModel(Model):
         Returns:
             preprocessed dataframe
         """
+
+        if not hasattr(self.__api.Prediction, "exportpreprocesseddata"):
+            raise NotImplementedError('The feature is not available on this platform')
+
         pd = get_required_module('pandas')
 
         applied_model = self.apply(dataset, self.name + '_applied')
@@ -1498,3 +1531,12 @@ class ConfusionMatrix:
         self.false_positives = false_positives
         self.true_negatives = true_negatives
         self.false_negatives = false_negatives
+
+    def __repr__(self):
+        _rep = {
+            "True Positives": self.true_positives,
+            "True Negatives": self.true_negatives,
+            "False Positives": self.false_positives,
+            "False Negatives": self.false_negatives
+        }
+        return "\n".join(f"{_k}: {_v}" for _k,_v in _rep.items())

@@ -45,8 +45,8 @@ class TargetFactory:
             modality (int or str or float): modality of the target if variable is discrete.
                 Default is most frequent modality.
             scoreTypes (list of str): score types to be defined for the target.
-                Default is [self.KPI_SCORE_PURITY, self.KPI_SCORE_COVERAGE] if variable is discrete and
-                [self.KPI_SCORE_AVERAGE_VALUE] if variable is continuous.
+                Default is [TargetFactory.KPI_SCORE_PURITY, TargetFactory.KPI_SCORE_COVERAGE] if variable is discrete and
+                [TargetFactory.KPI_SCORE_AVERAGE_VALUE] if variable is continuous.
 
         Returns:
             (Target): The new target
@@ -332,6 +332,8 @@ class Target(KeyIndicator):
 
     @Helper.try_catch
     def update(self, name):
+        if not hasattr(self.__api.Kpi, 'updateKpi'):
+            raise NotImplementedError('The feature is not available on this platform')
         data = {'kpis': self.score_ids, 'newName': name}
         json = {'project_ID': self.__json_returned.get('projectId'), 'json': data}
         self.__api.Kpi.updateKpi(**json)
@@ -373,6 +375,8 @@ class Description(KeyIndicator):
 
     @Helper.try_catch
     def update(self, name):
+        if not hasattr(self.__api.Kpi, 'updateKpi'):
+            raise NotImplementedError('The feature is not available on this platform')
         data = {'kpis': [self.score_id], 'newName': name}
         json = {'project_ID': self.__json_returned.get('projectId'), 'json': data}
         self.__api.Kpi.updateKpi(**json)
