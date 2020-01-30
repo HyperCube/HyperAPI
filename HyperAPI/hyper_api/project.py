@@ -93,7 +93,7 @@ class ProjectFactory:
             Project
         """
         if self.__api.session.version >= self.__api.session.version.__class__('3.6'):
-            defaultProjectId = self.__api.Settings._getusersettings().get('defaultProjectId')
+            defaultProjectId = self.__api.Settings.getusersettings().get('defaultProjectId')
         else:
             defaultProjectId = self.__api.Projects.projects().get('defaultProject')
 
@@ -122,7 +122,11 @@ class ProjectFactory:
         Returns:
             Project
         """
-        return self.get(name) or self.create(name, description, type_id, wait)
+        _res = self.get(name)
+        if _res is None:
+            self.create(name, description, type_id, wait)
+            _res = self.get(name)
+        return _res
 
 
 class Project(Base):
@@ -186,7 +190,7 @@ class Project(Base):
             An object of type ModelFactory
         """
         return ModelFactory(self.__api, self.project_id)
-    
+
     @property
     def AutomatedModel(self):
         """
@@ -195,7 +199,10 @@ class Project(Base):
         Returns:
             An object of type ModelFactory
         """
-        return AutomatedModelFactory(self.__api, self.project_id)
+        if hasattr(self.__api, 'AutomatedPrediction'):
+            return AutomatedModelFactory(self.__api, self.project_id)
+        else:
+            raise NotImplementedError('The feature is not available on this platform')
 
     @property
     def Xray(self):
@@ -225,7 +232,7 @@ class Project(Base):
         Returns a boolean indicating if this project is the default project.
         """
         if self.__api.session.version >= self.__api.session.version.__class__('3.6'):
-            defaultProjectId = self.__api.Settings._getusersettings().get('defaultProjectId')
+            defaultProjectId = self.__api.Settings.getusersettings().get('defaultProjectId')
         else:
             defaultProjectId = self.__api.Projects.projects().get('defaultProject')
 
@@ -238,10 +245,6 @@ class Project(Base):
     @property
     def user_name(self):
         return self.__json_returned.get('userName')
-
-    @property
-    def workflow_id(self):
-        return self.__json_returned.get('workflowId')
 
     @property
     def datasets(self):
@@ -293,11 +296,11 @@ class Project(Base):
 
     @property
     def share_users(self):
-        return [u['username'] for u in self.__json_returned.get('shareUsers')]
+        raise NotImplementedError('The feature is not available on this platform')
 
     @property
     def share_users_ids(self):
-        return [u['_id'] for u in self.__json_returned.get('shareUsers')]
+        raise NotImplementedError('The feature is not available on this platform')
 
     @property
     def description(self):
@@ -307,18 +310,20 @@ class Project(Base):
         return self.__json_returned.get('description')
 
     @property
-    def default_dataset_id(self):
-        """
-        The default dataset's ID.
-        """
-        return self.__json_returned.get('defaultDatasetId')        
-
-    @property
     def created(self):
         """
         Creation date of this project.
         """
-        return self.str2date(self.__json_returned.get('createdOn'), '%Y-%m-%dT%H:%M:%S.%fZ')
+        created_date = None
+        if 'createdOn' in self.__json_returned.keys():
+            created_date = self.__json_returned.get('createdOn')
+        elif 'created' in self.__json_returned.keys():
+            created_date = self.__json_returned.get('created')
+        else:
+            return None
+        if isinstance(created_date, int):
+            return self.timestamp2date(created_date)
+        return self.str2date(created_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
     # Methods part
     @Helper.try_catch
@@ -355,6 +360,8 @@ class Project(Base):
 
     @Helper.try_catch
     def share_with_user(self, username, add=True):
+        raise NotImplementedError('The feature is not available on this platform')
+
         if (username in self.share_users and add) or (username not in self.share_users and not add):
             # Nothing to do
             return self

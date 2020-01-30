@@ -1,5 +1,42 @@
 # HyperAPI Changelog
 
+## Version 8
+
+### 8.0.0
+- Removed router to use external hdp_lib_api module instead
+- Add released hdp_lib_api module as HyperAPI_routes package in the sources
+    `./resources/HyperAPI_routes-1-py3-none-any.whl`
+
+- Fixed dataset and project creation date compatibility to HC 4.3 versions
+- Removed the following project properties:
+    - `workflow_id`
+    - `default_dataset_id`
+
+- Changed Project `get_or_create` method behaviour to be consistent with `get` method.
+- Disabled the following methods:
+    - `share_users`
+    - `share_users_ids`
+    - `share_with_user`
+- `AutomatedModels` Project property's availability is now tied to the platform version. 
+
+- Update Dataset `create` method to use the most correct syntax for delimiter ie 'semicolon'
+- Correct representation of Dataset instance when dataset is deleted
+- Updated Dataset `split` method docstring
+
+- `get_discreteDict` and `encode_dataframe` Dataset methods availability are now tied to the platform version. 
+
+- `update` Target method availability is now tied to the platform version. 
+
+- Fixed Ruleset `minimize` method when using size as score
+
+- The following ModelFactory methods are now tied to the platform version:
+    - `create_XGBRegressor`
+    - `create_Lasso`
+    - `create_Perceptron`
+    - `create_TimeSeriesForecaster`
+
+- The methods `preprocess_data` for ClassifierModel and RegressorModel are now tied to the platform version
+
 ## Version 7
 
 ### 7.0.11 

@@ -147,7 +147,7 @@ class Variable(Base):
         """
         if self.__api.session.version >= self.__api.session.version.__class__('3.6'):
             varname = self.name
-            data = {'updateFields': {varname: {'ignored': True }}}
+            data = {'updateFields': {varname: {'ignored': True}}}
             returned_json = self.__api.Datasets.metadata(project_ID=self.project_id, dataset_ID=self.dataset_id, json=data)
             self.__json_returned['ignored'] = list(filter(lambda x: x.get('varName') == self.name, returned_json['metadata']['variables']))[0].get('ignored')
         elif not self.is_ignored:
@@ -164,7 +164,7 @@ class Variable(Base):
         """
         if self.__api.session.version >= self.__api.session.version.__class__('3.6'):
             varname = self.name
-            data = {'updateFields': {varname: {'ignored': False }}}
+            data = {'updateFields': {varname: {'ignored': False}}}
             returned_json = self.__api.Datasets.metadata(project_ID=self.project_id, dataset_ID=self.dataset_id, json=data)
             self.__json_returned['ignored'] = list(filter(lambda x: x.get('varName') == self.name, returned_json['metadata']['variables']))[0].get('ignored')
         elif self.is_ignored:
@@ -178,7 +178,7 @@ class Variable(Base):
         json = {'project_ID': self.project_id, 'dataset_ID': self.dataset_id}
         variable_res = self.__api.Variable.getvariable(**json)
         return list(filter(lambda x: x.get('name') == self.name, variable_res['variables']))[0]
-        
+
 
 class DiscreteVariable(Variable):
     def __init__(self, api, json_sent, json_returned):
@@ -193,6 +193,7 @@ class DiscreteVariable(Variable):
     # Property part
     @property
     def modalities(self):
+        """ Returns the top 50 modalities by frequency for the variable """
         return self.__json_returned['stats']['distribution']['X']
 
     @property
@@ -201,6 +202,7 @@ class DiscreteVariable(Variable):
 
     @property
     def frequencies(self):
+        """ Returns the frequencies for the top 50 modalities by frequency for the variable """
         return self.__json_returned['stats']['distribution']['Y']
 
     @property
@@ -213,6 +215,7 @@ class DiscreteVariable(Variable):
 
     @property
     def purities(self):
+        """ Returns the purities for the top 50 modalities by frequency for the variable """
         return self.__json_returned['stats']['distribution']['Purities']
 
 

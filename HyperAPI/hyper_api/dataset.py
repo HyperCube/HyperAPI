@@ -23,7 +23,7 @@ class DatasetFactory:
 
     @Helper.try_catch
     def create(self, name, file_path, decimal='.',
-               delimiter=';', encoding='UTF-8', selectedSheet=1,
+               delimiter='semicolon', encoding='UTF-8', selectedSheet=1,
                description='', modalities=2, continuous_threshold=0.95, missing_threshold=0.95,
                metadata_file_path=None, discreteDict_file_path=None, keepVariableName=None):
         """
@@ -32,7 +32,7 @@ class DatasetFactory:
             name (str): The name of the dataset
             file_path (str): The origin path of the file
             decimal (str): Decimal separator - csv files only, default is '.'
-            delimiter (str): The csv field delimiter - csv files only, default is ';'
+            delimiter (str): The csv field delimiter - csv files only, default is 'semicolon'
             encoding (str): The file encoding - csv files only, default is 'UTF-8'
             selectedSheet (int): The worksheet to use (starts at 1 like in Hypercube User Interface) - Excel files only, default is 1
             description (str): The dataset description, default is ''
@@ -385,14 +385,13 @@ class Dataset(Base):
             self.__class__.__name__,
             self.name,
             self.dataset_id
-        ) + ("\t<This is the default Dataset>\n" if self.is_default else "") + \
+        ) + ("\t<This is the default Dataset>\n" if self.is_default and not self._is_deleted else "") + \
             ("\t<! This dataset has been deleted>\n" if self._is_deleted else "") + \
-            """\t- Description : {}\n\t- Size : {} bytes\n\t- Created on : {}\n\t- Modified on : {}\n\t- Source filename : {}\n""".format(
+            """\t- Description : {}\n\t- Size : {} bytes\n\t- Created on : {}\n\t- Modified on : {}\n""".format(
             self.description,
             self.size,
-            self.created.strftime('%Y-%m-%d %H:%M:%S UTC'),
-            self.modified.strftime('%Y-%m-%d %H:%M:%S UTC') if self.modified is not None else "N/A",
-            self.source_file_name)
+            self.created.strftime('%Y-%m-%d %H:%M:%S UTC') if self.created is not None else "N/A",
+            self.modified.strftime('%Y-%m-%d %H:%M:%S UTC') if self.modified is not None else "N/A")
 
     # Factory part
     @property
@@ -446,15 +445,31 @@ class Dataset(Base):
 
     @property
     def size(self):
+        """
+        Size in bytes.
+        """
         return self.__json_returned.get('size')
 
     @property
     def created(self):
-        return self.str2date(self.__json_returned.get('createdOn'), '%Y-%m-%dT%H:%M:%S.%fZ')
+        created_date = None
+        if 'createdOn' in self.__json_returned.keys():
+            created_date = self.__json_returned.get('createdOn')
+        elif 'created' in self.__json_returned.keys():
+            created_date = self.__json_returned.get('created')
+        else:
+            return None
+        if isinstance(created_date, int):
+            return self.timestamp2date(created_date)
+        return self.str2date(created_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
     @property
     def modified(self):
         return self.str2date(self.__json_returned.get('modified'), '%Y-%m-%dT%H:%M:%S.%fZ')
+
+    @property
+    def source_file_name(self):
+        return self.__json_returned.get('sourceFileName')
 
     @property
     def project_id(self):
@@ -463,10 +478,6 @@ class Dataset(Base):
     @property
     def is_default(self):
         return self.__json_returned.get('selected')
-
-    @property
-    def source_file_name(self):
-        return self.__json_returned.get('sourceFileName')
 
     @property
     def separator(self):
@@ -521,14 +532,14 @@ class Dataset(Base):
         """
         Split the dataset into two subsets for training and testing models.
         Args:
-            train_ratio (float): ratio between training set size and original data set size
-            random_state (int): seed used by the random number generator
+            train_ratio (float): ratio between training set size and original data set size, default = 0.7
+            random_state (int): seed used by the random number generator, default = 42
             keep_proportion_variable (Variable): discrete variable which modalities
-                keep similar proportions in training and test sets
-            train_dataset_name (str): name of the training set
-            train_dataset_desc (str): description of the training set
-            test_dataset_name (str): name of the test set
-            test_dataset_desc (str): description of the test set
+                keep similar proportions in training and test sets, default = None
+            train_dataset_name (str): name of the training set, default = None
+            train_dataset_desc (str): description of the training set, default = None
+            test_dataset_name (str): name of the test set, default = None
+            test_dataset_desc (str): description of the test set, default = None
         Returns:
             The new training and test datasets
         """
@@ -587,7 +598,7 @@ class Dataset(Base):
         return "{}_{}".format(train_name, suffix), "{}_{}".format(test_name, suffix)
 
     @Helper.try_catch
-    def _export(self):
+    def __export(self):
         json = {
             "format": "csv",
             "useFileStream": True,
@@ -622,7 +633,7 @@ class Dataset(Base):
         """
         if not self._is_deleted:
             with open(path, 'wb') as FILE_OUT:
-                FILE_OUT.write(self._export())
+                FILE_OUT.write(self.__export())
 
     @Helper.try_catch
     def export_dataframe(self):
@@ -633,7 +644,7 @@ class Dataset(Base):
         """
         if not self._is_deleted:
             pd = get_required_module('pandas')
-            _data = io.StringIO(self._export().decode('utf-8'))
+            _data = io.StringIO(self.__export().decode('utf-8'))
 
             # Create a dictionnary giving the string dtype for all discrete variables
             _forced_types = dict((_v.name, str) for _v in self.variables if _v.is_discrete)
@@ -649,16 +660,19 @@ class Dataset(Base):
         """
         if not self._is_deleted:
             return self.__api.Datasets.exportmetadata(project_ID=self.project_id,
-                                                  dataset_ID=self.dataset_id)
+                                                      dataset_ID=self.dataset_id)
 
     @Helper.try_catch
     def get_discreteDict(self):
         """
         Get dataset DiscreteDict
         """
+        if not hasattr(self.__api.Datasets, "exportdiscretedict"):
+            raise NotImplementedError('The feature is not available on this platform')
+
         if not self._is_deleted:
             return self.__api.Datasets.exportdiscretedict(project_ID=self.project_id,
-                                                  dataset_ID=self.dataset_id)
+                                                          dataset_ID=self.dataset_id)
 
     @Helper.try_catch
     def encode_dataframe(self, name, dataframe, description='', modalities=2,
@@ -672,23 +686,23 @@ class Dataset(Base):
             modalities (int): Modality threshold for discrete variables, default is 2
             continuous_threshold (float): % of continuous values threshold for continuous variables ,default is 0.95
             missing_threshold (float): % of missing values threshold for ignored variables, default is 0.95
-            
+
         Returns:
             Dataset
         '''
         metadata = self.get_metadata()
         oldNames = set([
-                str(var.get("varName", '')).strip().replace("\n", "")
-                for var in metadata.get("variables")
-            ])
+            str(var.get("varName", '')).strip().replace("\n", "")
+            for var in metadata.get("variables")
+        ])
         newNames = set([
-                str(var).strip().replace("\n", "")
-                for var in dataframe.columns
-            ])
-        keepVariableName =  'true' if newNames <= oldNames else 'false'
+            str(var).strip().replace("\n", "")
+            for var in dataframe.columns
+        ])
+        keepVariableName = 'true' if newNames <= oldNames else 'false'
         discreteDict = self.get_discreteDict()
-        dataset = DatasetFactory(self.__api, self.project_id).create_from_dataframe(name, dataframe,  
-                    description=description, modalities=modalities,  
-                   continuous_threshold=continuous_threshold, missing_threshold=missing_threshold, 
-                    metadata=metadata, discreteDict=discreteDict, keepVariableName=keepVariableName)
+        dataset = DatasetFactory(self.__api, self.project_id).create_from_dataframe(name, dataframe,
+                                                                                    description=description, modalities=modalities,
+                                                                                    continuous_threshold=continuous_threshold, missing_threshold=missing_threshold,
+                                                                                    metadata=metadata, discreteDict=discreteDict, keepVariableName=keepVariableName)
         return dataset

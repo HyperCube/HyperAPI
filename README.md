@@ -8,6 +8,9 @@ visit https://www.hcube.io
 - Python 3.6.2
 - Pip
 
+The HyperAPI package requires the HyperAPI_routes package, which is included as a wheel in the repository.
+`.\resources\HyperAPI_routes-1-py3-none-any.whl`
+
 # User Documentation
 
 [Direct link](http://hyperapi-doc.s3-website.eu-west-3.amazonaws.com/29dc2abb-fc26-403e-bad0-0088c7640168/index.html)
@@ -16,22 +19,20 @@ visit https://www.hcube.io
 
 _on windows_
 
-```pip install --upgrade HyperAPI``` 
+```pip install --upgrade HyperAPI -r requirements.txt``` 
 
 _on linux/mac_
 
-```pip3 install --upgrade HyperAPI```
+```pip3 install --upgrade HyperAPI -r requirements.txt```
 
 Sample python code : 
 
 ```
-from HyperAPI.hdp_api import Router
-api = Router(token="USER_TOKEN", url="https://trial.hcube.io")
+from hdp_lib_api import Router
+api = Router(token="<USER_TOKEN>", url="https://trial.hcube.io")
 
 ```
-# Dev Documentation
 
-[Direct link](https://HyperCube/HyperAPI/hdp_api/README.md)
 
 # Building and installing the HyperAPI module manually
 
@@ -53,17 +54,26 @@ Generate the HyperAPI wheel file.
 
 _on windows_
 
-```python setup.py sdist bdist_wheel```
+```python setup.py bdist_wheel```
 
 _on linux/mac_
 
-```python setup.py sdist bdist_wheel```
+```python setup.py bdist_wheel```
 
 The file will be generated on the in the `/dist` folder and be named HyperAPI-_x_-py3-none-any.whl _x_ being the provided version number.
 
-### Installing the python wheel
+### Installing the python wheels
 
-The wheel can be installed directly using pip: 
+Install the HyperAPI_routes package first:
+_on windows_
+
+```pip install /resources/HyperAPI_routes-1-py3-none-any.whl```
+
+_on linux/mac_
+
+```pip3 install /resources/HyperAPI_routes-1-py3-none-any.whl```
+
+The HyperAPI wheel can then be installed directly using pip: 
 
 _on windows_
 
@@ -75,10 +85,8 @@ _on linux/mac_
 
 # Using the module from the source files 
 
-- *Option 1:* run python from the source forlder:
-- *Option 2:* add the HyperAPI folder to the python path:
-
-### Option 2
+- *Option 1:* run python from the source forlder.
+- *Option 2:* add the HyperAPI folder to the python path.
 
 # Running Tests
 

@@ -1,10 +1,6 @@
 from HyperAPI.util import Helper
 from HyperAPI.hyper_api.base import Base
 from HyperAPI.utils.exceptions import ApiException
-from HyperAPI.utils.imports import get_required_module
-from datetime import datetime
-from io import StringIO
-from json import dump, dumps
 
 
 class ModelTypes:
@@ -24,8 +20,10 @@ class ModelTypes:
             LASSO, PERCEPTRON, 'All']
     REGRESSORLIST = [GRADIENTBOOSTINGREGRESSOR, XGBREGRESSOR, LASSO]
 
+
 class AlgoTypes:
     LIST = ['Bayesian', 'Random', None]
+
 
 class AutomatedModelFactory:
     """
@@ -77,7 +75,7 @@ class AutomatedModelFactory:
         Returns:
             The Model or None
         """
-        return self.__api.AutomatedPrediction.getautomatedmodel(project_ID=self.__project_id, model_ID = id)
+        return self.__api.AutomatedPrediction.getautomatedmodel(project_ID=self.__project_id, model_ID=id)
 
     @Helper.try_catch
     def create(self, dataset, target, params):
@@ -97,14 +95,14 @@ class AutomatedModelFactory:
         if params['algoType'] not in AlgoTypes.LIST:
             print('Unexpected model name : {}, valid options are : {}'.format(params['algoType'], ', '.join(AlgoTypes.LIST)))
             return
-        
+
         if target.indicator_type == self._INDICATOR_DISCRETE_WITH_MODALITY:
             variable = next(variable for variable in dataset.variables if variable.name == target.variable_name)
             index = variable.modalities.index(target.modality)
             datasetPurity = variable.purities[index]
             score_purity_min = round(datasetPurity, 3)
             coverage_min = 10 if (variable.frequencies[index] < 1000) else 0.01
-        
+
         scores = []
         for score_id, score_type in zip(target.score_ids, target.scores):
             score = {
@@ -167,13 +165,12 @@ class AutomatedModelFactory:
         Publish the best model in the model page.
 
         Args:
-            project_ID 
             autoModel_ID: The id of the automated Model
             model_ID: The id of the Model
         """
 
         return self.__api.AutomatedPrediction.publishautomatedmodel(project_ID=self.__project_id, model_ID=autoModel_ID, generatedmodel_ID=model_ID)
-    
+
     @Helper.try_catch
     def get_generated_models(self, model_ID):
         """
@@ -182,9 +179,8 @@ class AutomatedModelFactory:
         Args:
             model_ID: The id of the automated Model
         """
-        return self.__api.AutomatedPrediction.getgeneratedmodels(project_ID=self.__project_id, model_ID = model_ID)
+        return self.__api.AutomatedPrediction.getgeneratedmodels(project_ID=self.__project_id, model_ID=model_ID)
 
-    
 
 class AutomatedModel(Base):
     """

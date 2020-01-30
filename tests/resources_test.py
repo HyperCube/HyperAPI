@@ -1,5 +1,5 @@
 import unittest
-from HyperAPI.hdp_api.base.router import Router
+from hdp_lib_api import Router
 from tests._utils import DummySession
 
 
