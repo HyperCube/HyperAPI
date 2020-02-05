@@ -36,7 +36,7 @@ class ProjectFactory:
             project = Project(self.__api, json, self.__api.Projects.addproject(json=json))
             if wait is False:
                 return project
-            self.__api.handle_work_states(project_id=project.project_id, work_id=project.workflow_id)
+            self.__api.handle_work_states(project_id=project.project_id, work_id=project.__json_returned.get('workflowId'))
             return project
 
     @Helper.try_catch
