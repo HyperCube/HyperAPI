@@ -3,9 +3,6 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo "Running Linter"
-      - pip install flake8
-      - python -m flake8 --ignore E501,W503,W504 $CODEBUILD_SRC_DIR/docs/HyperAPI
       - echo "Running Unit Tests"
       - pip install -r $CODEBUILD_SRC_DIR/requirements.txt
       - python -m unittest discover -s $CODEBUILD_SRC_DIR/tests -p "*_test.py" -v

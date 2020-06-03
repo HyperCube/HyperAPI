@@ -244,7 +244,11 @@ class Project(Base):
 
     @property
     def user_name(self):
-        return self.__json_returned.get('userName')
+        owners = list(filter(lambda x: x["role"] == "O", self.__json_returned.get("users", [])))
+        if len(owners) > 0:
+            return owners[0].get("username", "")
+        else:
+            return ""
 
     @property
     def datasets(self):
@@ -343,8 +347,14 @@ class Project(Base):
         Set this project as default.
         """
         if not self._is_deleted:
-            self.__json_sent = {'project_ID': self.project_id}
-            self.__api.Projects.defaultproject(**self.__json_sent)
+            self.__json_sent = {
+                'json': { 
+                    'settings': { 
+                        'defaultProjectId': self.project_id 
+                    }
+                }
+            }
+            self.__api.Settings.updateusersettings(**self.__json_sent)
             self.__json_returned = ProjectFactory(self.__api).get_by_id(self.project_id).__json_returned
         return self
 
