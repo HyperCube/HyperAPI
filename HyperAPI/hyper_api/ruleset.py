@@ -561,31 +561,70 @@ class Ruleset(Base):
         return None
 
     @Helper.try_catch
-    def get_rules(self, limit=100, sort=None, min_scores=None, max_scores=None, include_variables=None, exclude_variables=None):
+    def get_rules(self, skip=0, limit=100, sort=None, min_scores=[], max_scores=[], include_variables=[], exclude_variables=[], include_tags=[], exclude_tags=[]):
         """
         Args:
+            skip (int): Number of rules to skip, default is 0
             limit (int): Number of rules to get, default is 100
-            sort (dict): Sorting the rules. Example {'score': 'size', 'asc': true}
-            min_scores (dict): Set a minimum on a score. Example {'score': 'Purity', 'value': 0,563}
-            max_scores (dict): Set a maximum on a score. Example {'score': 'Coverage', 'value': 300}
-            include_variables (str): Variables to include
-            exclude_variables (str): Variables to exclude
+            sort (dict): Sorting the rules on a score in a given order
+                Example {'score': 'size', 'asc': true}
+                score takes one of the following values: ["Purity", "Coverage", "size", "complexity"]
+                if kpi has additionnal scores, it can also be used ("Lift, Z-score") 
+            min_scores (array): Array of minimum value for a score. 
+                (logical AND between several values)
+                Example: [{'score': 'Purity', 'value': 0,563}, {'score': 'Coverage', 'value': 20}]
+            max_scores (array): Array of maximum value for a score. 
+                (logical AND between several values)
+                Example: [{'score': 'Purity', 'value': 0,9}, {'score': 'Coverage', 'value': 300}]
+            include_variables (array): Array of variable names to include (logical OR between several values)
+            exclude_variables (array): Array of variable names to exclude (logical OR between several values)
+            include_tags (array): Array of variable tags to include (logical OR between several values)
+            exclude_tags (array): Array of variable tags to exclude (logical OR between several values)
 
         Returns:
             List of rules or None if Ruleset is deleted / in error
         """
         if not self._is_deleted and not self._is_in_error:
-            json = {'skip': 0,
-                    'limit': limit,
-                    'tagsfilter': self.name
-                    }
+            
+            _query = {
+                'params': {
+                    'rulesetNames': [self.name], 
+                    'skip': skip,
+                    'limit': limit 
+                }
+            }
+            
+            kpis_param = []
+            for kpi in self.kpis:
+                kpis_param.append({
+                    "filterId": kpi["kpiId"],
+                    "minValue": "",
+                    "maxValue": "",
+                    "sortby": 0
+                })
+            for kpiId in ["size", "complexity"]:
+                kpi = {
+                    "filterId": kpiId, 
+                    "minValue": "",
+                    "maxValue": "",
+                    "sortby": 0
+                }
+                if kpi not in kpis_param:
+                    kpis_param.append(kpi)
+            
             if sort:
                 if 'score' in sort and 'asc' in sort:
-                    var_name = decode_kpiname_to_id(self.kpis, sort['score'])
-                    if sort['asc']:
-                        json['sortasc'] = var_name
-                    else:
-                        json['sortdesc'] = var_name
+                    kpi_id = decode_kpiname_to_id(self.kpis, sort['score'])
+                    kpi_index = -1
+                    for i, item in enumerate(kpis_param):
+                        if item["filterId"] == kpi_id:
+                            kpi_index = i
+                    if kpi_index > -1:    
+                        if sort['asc']:
+                            kpis_param[kpi_index]["sortby"] = 2
+                        else:
+                            kpis_param[kpi_index]["sortby"] = 1
+
                 else:
                     raise ValueError('Wrong sort parameter, please follow this syntax : {\'score\': String, \'asc\': Boolean}')
 
@@ -594,8 +633,13 @@ class Ruleset(Base):
                     min_scores = [min_scores]
                 for score in min_scores:
                     if 'score' in score and 'value' in score:
-                        var_name = decode_kpiname_to_id(self.kpis, score['score'])
-                        json['min ' + var_name] = score['value']
+                        kpi_id = decode_kpiname_to_id(self.kpis, score['score'])
+                        kpi_index = -1
+                        for i, item in enumerate(kpis_param):
+                            if item["filterId"] == kpi_id:
+                                kpi_index = i
+                        if kpi_index > -1:
+                            kpis_param[kpi_index]["minValue"] = score['value']
                     else:
                         raise ValueError('Wrong min_score parameter, please follow this syntax : {\'score\': String, \'value\': Number}')
 
@@ -604,22 +648,54 @@ class Ruleset(Base):
                     max_scores = [max_scores]
                 for score in max_scores:
                     if 'score' in score and 'value' in score:
-                        var_name = decode_kpiname_to_id(self.kpis, score['score'])
-                        json['max ' + var_name] = score['value']
+                        kpi_id = decode_kpiname_to_id(self.kpis, score['score'])
+                        kpi_index = -1
+                        for i, item in enumerate(kpis_param):
+                            if item["filterId"] == kpi_id:
+                                kpi_index = i
+                        if kpi_index > -1:
+                            kpis_param[kpi_index]["maxValue"] = score['value']
                     else:
                         raise ValueError('Wrong max_score parameter, please follow this syntax : {\'score\': String, \'value\': Number}')
+
+            _query["params"]["kpis"] = kpis_param
+
+            variables_or_tags_param = {
+                "include_lists": {
+                    "variables": [],
+                    "tags": [],
+                    "metatypeTags": []
+                },
+                "exclude_lists": {
+                    "variables": [],
+                    "tags": [],
+                    "metatypeTags": []
+                }
+            }
 
             if include_variables:
                 if isinstance(include_variables, str):
                     include_variables = [include_variables]
-                json['varinclus'] = urllib.parse.quote(','.join(include_variables), safe='~()*!.\'')
+                variables_or_tags_param["include_lists"]["variables"] = include_variables
 
             if exclude_variables:
                 if isinstance(exclude_variables, str):
                     exclude_variables = [exclude_variables]
-                json['varexclus'] = urllib.parse.quote(','.join(exclude_variables), safe='~()*!.\'')
+                variables_or_tags_param["exclude_lists"]["variables"] = exclude_variables
 
-            json_returned = self.__api.Rules.getrules(project_ID=self.project_id, dataset_ID=self.dataset_id, params=json).get('rules')
+            if include_tags:
+                if isinstance(include_tags, str):
+                    include_tags = [include_tags]
+                variables_or_tags_param["include_lists"]["tags"] = include_tags
+
+            if exclude_tags:
+                if isinstance(exclude_tags, str):
+                    exclude_tags = [exclude_tags]
+                variables_or_tags_param["exclude_lists"]["tags"] = exclude_tags
+
+            _query["params"]["variablesOrTags"] = variables_or_tags_param
+
+            json_returned = self.__api.Rules.getrules(project_ID=self.project_id, dataset_ID=self.dataset_id, json=_query).get('rules')
             return Rules(self.__api, json_returned, self.kpis, self.project_id, self.dataset_id)
         return None
 
