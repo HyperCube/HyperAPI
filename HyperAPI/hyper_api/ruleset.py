@@ -537,9 +537,8 @@ class Ruleset(Base):
                 type(self.__json_returned.get('tag')) == str else 'done',
                 'tagName': self.name
             }
-            result = self.__api.Rules.removealearning(project_ID=self.project_id, dataset_ID=self.dataset_id, json=json)
-            if (result == b"task removed" and type(self.__json_returned.get('tag')) == str) or \
-               (result == b"OK" and type(self.__json_returned.get('tag')) == dict):
+            self.__api.Rules.removealearning(project_ID=self.project_id, dataset_ID=self.dataset_id, json=json)
+            if RulesetFactory(self.__api, self.project_id).get_by_id(self.id) is None:
                 self._is_deleted = True
         return self
 

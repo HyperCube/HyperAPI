@@ -15,29 +15,19 @@ class ProjectFactory:
         self.__api = api
 
     @Helper.try_catch
-    def create(self, name, description='', type_id=None, wait=False):
+    def create(self, name, description=''):
         """
         Create a HyperCube project.
 
         Args:
             name (str): The name of the project
             description (str): the description of the project, default is ''
-            type_id (str): id for a demo project (eg: 'TitanicDemoProject'), default is None, which is a blank project
-            wait (bool) : waits for the end of all works in the demo project specified by type_id, default is False
 
         Returns:
             Project
         """
-        if type_id is None:
-            json = {'name': name, 'description': description}
-            return Project(self.__api, json, self.__api.Projects.addproject(json=json))
-        else:
-            json = {'name': name, 'description': description, 'projectTypeId': type_id}
-            project = Project(self.__api, json, self.__api.Projects.addproject(json=json))
-            if wait is False:
-                return project
-            self.__api.handle_work_states(project_id=project.project_id, work_id=project.__json_returned.get('workflowId'))
-            return project
+        json = {'name': name, 'description': description}
+        return Project(self.__api, json, self.__api.Projects.addproject(json=json))
 
     @Helper.try_catch
     def filter(self):
@@ -231,16 +221,14 @@ class Project(Base):
         """
         Returns a boolean indicating if this project is the default project.
         """
+        if self._is_deleted:
+            return False
         if self.__api.session.version >= self.__api.session.version.__class__('3.6'):
             defaultProjectId = self.__api.Settings.getusersettings().get('defaultProjectId')
         else:
             defaultProjectId = self.__api.Projects.projects().get('defaultProject')
 
         return self.project_id == defaultProjectId
-
-    @property
-    def user_id(self):
-        return self.__json_returned.get('userId')
 
     @property
     def user_name(self):
@@ -297,14 +285,6 @@ class Project(Base):
         The project name.
         """
         return self.__json_returned.get('name')
-
-    @property
-    def share_users(self):
-        raise NotImplementedError('The feature is not available on this platform')
-
-    @property
-    def share_users_ids(self):
-        raise NotImplementedError('The feature is not available on this platform')
 
     @property
     def description(self):
@@ -367,33 +347,3 @@ class Project(Base):
                 self.__api.Projects.updateproject(**self.__json_sent)
                 self.__json_returned = ProjectFactory(self.__api).get_by_id(self.project_id).__json_returned
         return self
-
-    @Helper.try_catch
-    def share_with_user(self, username, add=True):
-        raise NotImplementedError('The feature is not available on this platform')
-
-        if (username in self.share_users and add) or (username not in self.share_users and not add):
-            # Nothing to do
-            return self
-        import json
-        query = {
-            'username': username
-        }
-        params = {
-            'query': json.dumps(query),
-            'limit': 1
-        }
-        user = self.__api.Identities.getallusers(params=params).get('users')[0]
-        if user:
-            print(user['_id'])
-            share_ids = self.share_users_ids
-            if add:
-                share_ids.append(user['_id'])
-            else:
-                share_ids.remove(user['_id'])
-            print(share_ids)
-            self.__api.Projects.updateshareusers(project_ID=self.project_id, json=share_ids)
-            self.__json_returned = ProjectFactory(self.__api).get_by_id(self.project_id).__json_returned
-            return self
-        else:
-            raise Exception('Cannot find user {}'.format(username))
