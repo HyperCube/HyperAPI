@@ -798,7 +798,7 @@ class ModelFactory:
 
 
     @Helper.try_catch
-    def create_TimeSeriesForecaster(self, dataset, name, target, freq='1T', seasonalities_choice=[], targets_to_enrich='', targets_history=[],
+    def _create_TimeSeriesForecaster(self, dataset, name, target, freq='1T', seasonalities_choice=[], targets_to_enrich='', targets_history=[],
                                     n_lags_max="", lags_to_include=[], one_hot_encode_seasons=False, remove_seasons =False, dropna=False,
                                     scaler_target='', scaler_X_var='', grid_search=False, rolling_enrich_features=[], test_ratio=0.3, 
                                     enable_custom_discretizations=True, nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median', 

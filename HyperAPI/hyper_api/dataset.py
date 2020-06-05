@@ -385,7 +385,7 @@ class Dataset(Base):
             self.__class__.__name__,
             self.name,
             self.dataset_id
-        ) + ("\t<This is the default Dataset>\n" if self.is_default and not self._is_deleted else "") + \
+        ) + ("\t<This is the default Dataset>\n" if self.is_default else "") + \
             ("\t<! This dataset has been deleted>\n" if self._is_deleted else "") + \
             """\t- Description : {}\n\t- Size : {} bytes\n\t- Created on : {}\n\t- Modified on : {}\n""".format(
             self.description,
@@ -477,7 +477,11 @@ class Dataset(Base):
 
     @property
     def is_default(self):
-        return self.__json_returned.get('selected')
+        if self._is_deleted:
+            return False
+        json = {'project_ID': self.project_id}
+        json_returned = self.__api.Projects.getaproject(**json)
+        return self.dataset_id == json_returned.get('defaultDatasetId')
 
     @property
     def separator(self):
@@ -518,8 +522,8 @@ class Dataset(Base):
         """
         if not self._is_deleted:
             if self.__api.session.version >= self.__api.session.version.__class__('3.6'):
-                self.__json_sent = {'defaultDatasetId': self.dataset_id}
-                self.__api.Projects.update(project_ID=self.project_id, json=self.__json_sent)
+                self.__json_sent = {'project_ID': self.project_id, 'json': {'defaultDatasetId': self.dataset_id}}
+                self.__api.Projects.updateproject(**self.__json_sent)
             else:
                 self.__json_sent = {'project_ID': self.project_id, 'dataset_ID': self.dataset_id}
                 self.__api.Datasets.defaultdataset(**self.__json_sent)
@@ -663,7 +667,7 @@ class Dataset(Base):
                                                       dataset_ID=self.dataset_id)
 
     @Helper.try_catch
-    def get_discreteDict(self):
+    def _get_discreteDict(self):
         """
         Get dataset DiscreteDict
         """

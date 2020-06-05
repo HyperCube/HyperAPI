@@ -30,7 +30,7 @@ class XRayVariableFactory:
         return None
 
     @Helper.try_catch
-    def get_by_id(self, column_id):
+    def get_by_column_id(self, column_id):
         """
             Returns:
                 XRayVariable: XRay variable found by column_id
