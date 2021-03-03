@@ -1,1 +1,2 @@
-./resources/HyperAPI_routes-1-py3-none-any.whl
+./resources/HyperAPI_routes-4-py3-none-any.whl
+pyjwt==1.5.3

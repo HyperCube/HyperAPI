@@ -15,17 +15,30 @@ class ProjectFactory:
         self.__api = api
 
     @Helper.try_catch
-    def create(self, name, description=''):
+    def create(self, name, description='', type_id=None, wait=False):
         """
         Create a HyperCube project.
 
         Args:
             name (str): The name of the project
             description (str): the description of the project, default is ''
-
+            type_id (str): id for a demo project (eg: 'TitanicDemoProject'), default is None, which is a blank project 
+                available only for HDP versions equal to or later than 6.0.1
+            wait (bool) : waits for the end of all works in the demo project specified by type_id, default is False
+                available only for HDP versions equal to or later than 6.0.1
         Returns:
             Project
         """
+        if type_id is None or self.__api.session.version < self.__api.session.version.__class__('6.0.1'):
+            json = {'name': name, 'description': description}
+            return Project(self.__api, json, self.__api.Projects.addproject(json=json))
+        else:
+            json = {'name': name, 'description': description, 'projectTypeId': type_id}
+            project = Project(self.__api, json, self.__api.Projects.addproject(json=json))
+            if wait is False or self.__api.session.version < self.__api.session.version.__class__('6.0.1'):
+                return project
+            self.__api.handle_work_states(project_id=project.project_id, work_id=project.__json_returned.get('workflowId'))
+            return project
         json = {'name': name, 'description': description}
         return Project(self.__api, json, self.__api.Projects.addproject(json=json))
 

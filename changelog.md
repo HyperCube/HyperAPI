@@ -2,6 +2,15 @@
 
 ## Version 8
 
+### 8.0.2
+- Fix Dataset method 'is_default' for earlier HDP versions than 6.0.1
+- Fix Ruleset method 'get_rules' for earlier HDP versions than 6.0.1
+- Restore the following Project argument in method 'create' for later HDP versions than 6.0.1:
+    - `type_id`
+    - `wait`
+- Released hdp_lib_api module v4
+    `./resources/HyperAPI_routes-4-py3-none-any.whl`
+
 ### 8.0.0
 - Removed router to use external hdp_lib_api module instead
 - Add released hdp_lib_api module as HyperAPI_routes package in the sources

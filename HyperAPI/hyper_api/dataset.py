@@ -481,7 +481,17 @@ class Dataset(Base):
             return False
         json = {'project_ID': self.project_id}
         json_returned = self.__api.Projects.getaproject(**json)
-        return self.dataset_id == json_returned.get('defaultDatasetId')
+        if self.__api.session.version >= self.__api.session.version.__class__('6.0.1'):
+            return self.dataset_id == json_returned.get('defaultDatasetId')
+        else:
+            return next(
+                (
+                    _dataset.get('selected') 
+                    for _dataset in json_returned.get('Datasets') 
+                    if _dataset.get('_id') == self.dataset_id
+                ), 
+                False
+            )
 
     @property
     def separator(self):
@@ -704,7 +714,7 @@ class Dataset(Base):
             for var in dataframe.columns
         ])
         keepVariableName = 'true' if newNames <= oldNames else 'false'
-        discreteDict = self.get_discreteDict()
+        discreteDict = self._get_discreteDict()
         dataset = DatasetFactory(self.__api, self.project_id).create_from_dataframe(name, dataframe,
                                                                                     description=description, modalities=modalities,
                                                                                     continuous_threshold=continuous_threshold, missing_threshold=missing_threshold,

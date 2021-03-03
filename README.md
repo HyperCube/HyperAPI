@@ -9,7 +9,7 @@ visit https://www.hcube.io
 - Pip
 
 The HyperAPI package requires the HyperAPI_routes package, which is included as a wheel in the repository.
-`.\resources\HyperAPI_routes-1-py3-none-any.whl`
+`.\resources\HyperAPI_routes-4-py3-none-any.whl`
 
 # User Documentation
 
@@ -64,24 +64,24 @@ The file will be generated on the in the `/dist` folder and be named HyperAPI-_x
 
 ### Installing the python wheels
 
-Install the HyperAPI_routes package first:
+From the Repository root folder, install the HyperAPI_routes package first:
 _on windows_
 
-```pip install /resources/HyperAPI_routes-1-py3-none-any.whl```
+```pip install resources/HyperAPI_routes-4-py3-none-any.whl```
 
 _on linux/mac_
 
-```pip3 install /resources/HyperAPI_routes-1-py3-none-any.whl```
+```pip3 install resources/HyperAPI_routes-4-py3-none-any.whl```
 
 The HyperAPI wheel can then be installed directly using pip: 
 
 _on windows_
 
-```pip install /dist/HyperAPI-_x_-py3-none-any.whl```
+```pip install dist/HyperAPI-_x_-py3-none-any.whl```
 
 _on linux/mac_
 
-```pip3 install /dist/HyperAPI-_x_-py3-none-any.whl```
+```pip3 install dist/HyperAPI-_x_-py3-none-any.whl```
 
 # Using the module from the source files 
 

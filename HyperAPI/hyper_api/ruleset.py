@@ -584,7 +584,12 @@ class Ruleset(Base):
             List of rules or None if Ruleset is deleted / in error
         """
         if not self._is_deleted and not self._is_in_error:
-            
+            # _params is used in HDP version elder than 6.0 whereas _query is used in later versions
+            _params = {'skip': 0,
+                    'limit': limit,
+                    'tagsfilter': self.name
+                    }
+
             _query = {
                 'params': {
                     'rulesetNames': [self.name], 
@@ -614,6 +619,11 @@ class Ruleset(Base):
             if sort:
                 if 'score' in sort and 'asc' in sort:
                     kpi_id = decode_kpiname_to_id(self.kpis, sort['score'])
+                    if sort['asc']:
+                        _params['sortasc'] = kpi_id
+                    else:
+                        _params['sortdesc'] = kpi_id
+
                     kpi_index = -1
                     for i, item in enumerate(kpis_param):
                         if item["filterId"] == kpi_id:
@@ -633,6 +643,7 @@ class Ruleset(Base):
                 for score in min_scores:
                     if 'score' in score and 'value' in score:
                         kpi_id = decode_kpiname_to_id(self.kpis, score['score'])
+                        _params['min ' + kpi_id] = score['value']
                         kpi_index = -1
                         for i, item in enumerate(kpis_param):
                             if item["filterId"] == kpi_id:
@@ -648,6 +659,7 @@ class Ruleset(Base):
                 for score in max_scores:
                     if 'score' in score and 'value' in score:
                         kpi_id = decode_kpiname_to_id(self.kpis, score['score'])
+                        _params['max ' + kpi_id] = score['value']
                         kpi_index = -1
                         for i, item in enumerate(kpis_param):
                             if item["filterId"] == kpi_id:
@@ -675,6 +687,7 @@ class Ruleset(Base):
             if include_variables:
                 if isinstance(include_variables, str):
                     include_variables = [include_variables]
+                _params['varinclus'] = urllib.parse.quote(','.join(include_variables), safe='~()*!.\'')
                 variables_or_tags_param["include_lists"]["variables"] = include_variables
 
             if exclude_variables:
@@ -694,7 +707,10 @@ class Ruleset(Base):
 
             _query["params"]["variablesOrTags"] = variables_or_tags_param
 
-            json_returned = self.__api.Rules.getrules(project_ID=self.project_id, dataset_ID=self.dataset_id, json=_query).get('rules')
+            if self.__api.session.version >= self.__api.session.version.__class__('6.0.1'):
+                json_returned = self.__api.Rules.getrules(project_ID=self.project_id, dataset_ID=self.dataset_id, json=_query).get('rules')
+            else:
+                json_returned = self.__api.Rules.getrules(project_ID=self.project_id, dataset_ID=self.dataset_id, params=_params).get('rules')
             return Rules(self.__api, json_returned, self.kpis, self.project_id, self.dataset_id)
         return None
 
