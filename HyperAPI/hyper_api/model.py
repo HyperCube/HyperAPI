@@ -70,10 +70,12 @@ class ModelFactory:
     @Helper.try_catch
     def filter(self):
         """
+        filter()
+
         Get all models.
 
         Returns:
-            List of models
+            list(Model): all models
         """
         project_id = self.__project_id
 
@@ -92,13 +94,15 @@ class ModelFactory:
     @Helper.try_catch
     def get(self, name):
         """
+        get(name)
+
         Get a model matching the given name or None if there is no match.
 
         Args:
             name (str): The name of the dataset
 
         Returns:
-            The Model or None
+            Model or None: Retrieved model
         """
         models = list(filter(lambda x: x.name == name, self.filter()))
         if models:
@@ -108,13 +112,15 @@ class ModelFactory:
     @Helper.try_catch
     def get_by_id(self, id):
         """
+        get_by_id(id)
+
         Get the model matching the given ID or None if there is no match.
 
         Args:
             id (str): The id of the Model
 
         Returns:
-            The Model or None
+            Model or None: Retrieved model
         """
         models = [model for model in self.filter() if model.id == id]
         if models:
@@ -124,6 +130,8 @@ class ModelFactory:
     @Helper.try_catch
     def predict_from_ruleset(self, dataset_source, dataset_predict, rulesetname, name, target, nb_minimizations=1, coverage_increment=0.01):
         """
+        predict_from_ruleset(dataset_source, dataset_predict, rulesetname, name, target, nb_minimizations=1, coverage_increment=0.01)
+
         Create a HyperCube classifier model from a ruleset
 
         Args:
@@ -137,7 +145,7 @@ class ModelFactory:
                 default is 0.01
 
         Returns:
-            The Model
+            Model: Created model
         """
         kpiData = []
         for _id, _type in zip(target.score_ids, target.scores):
@@ -176,6 +184,8 @@ class ModelFactory:
                          max_complexity=3, nb_minimizations=1, coverage_increment=0.01, split_ratio=0.7, nb_iterations=1,
                          purity_tolerance=0.1, enable_custom_discretizations=True, save_all_rules=False):
         """
+        create_hypercube(dataset, name, target, purity_min=None, coverage_min=None, rule_complexity=2, quantiles=10, min_marginal_contribution=None, max_complexity=3, nb_minimizations=1, coverage_increment=0.01, split_ratio=0.7, nb_iterations=1, purity_tolerance=0.1, enable_custom_discretizations=True, save_all_rules=False)
+
         Create a HyperCube classifier model
 
         Args:
@@ -202,7 +212,7 @@ class ModelFactory:
             save_all_rules (boolean): save all generated rules in a new ruleset. Default is False
 
         Returns:
-            the created model
+            HyperCube: Created HyperCube model
         """
         variable = next(variable for variable in dataset.variables if variable.name == target.variable_name)
         index = variable.modalities.index(target.modality)
@@ -342,6 +352,8 @@ class ModelFactory:
                                 min_marginal_contribution=None, max_complexity=3, nb_minimizations=1, coverage_increment=0.01, split_ratio=0.7,
                                 nb_iterations=1, purity_tolerance=0.1, enable_custom_discretizations=True, save_all_rules=False):
         """
+        get_or_create_hypercube(dataset, name, target=None, purity_min=None, coverage_min=None, rule_complexity=2, quantiles=10, min_marginal_contribution=None, max_complexity=3, nb_minimizations=1, coverage_increment=0.01, split_ratio=0.7, nb_iterations=1, purity_tolerance=0.1, enable_custom_discretizations=True, save_all_rules=False)
+
         Get or Create a classifier or regressor model
 
         Args:
@@ -368,7 +380,7 @@ class ModelFactory:
             save_all_rules (boolean): save all generated rules in a new ruleset. Default is False
 
         Returns:
-            the created model or existing model matching name parameter
+            HyperCube: Created HyperCube model or existing model matching name parameter
         """
 
         model = self.get(name)
@@ -389,7 +401,7 @@ class ModelFactory:
             target (Target): Target used to generate the model
             params (dict): parameters used by the HyperWorker
         Returns:
-            the created model
+            ClassifierModel: Created model
         """
         if params['algoType'] not in AlgoTypes.LIST:
             print('Unexpected algorithm type : {}, valid options are : {}'.format(params['algoType'], ', '.join(AlgoTypes.LIST)))
@@ -468,6 +480,8 @@ class ModelFactory:
     def create_DecisionTree(self, dataset, name, target, max_depth=4, criterion='gini', split_ratio=0.7, enable_custom_discretizations=True,
                             nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median'):
         """
+        create_DecisionTree(dataset, name, target, max_depth=4, criterion='gini', split_ratio=0.7, enable_custom_discretizations=True, nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median')
+
         Create a decision tree classifier model
 
         Args:
@@ -483,8 +497,9 @@ class ModelFactory:
             nbMaxModality (int): Maximum number of modalities per variable. Default is 50
             nbMinObservation (int): Modalities with a number of observations lower will be ignored. Default is 10
             replaceMissingValues (str): Method to replace missing values. Available methods are 'Median', 'Mean' and 'Delete'. Default is 'Median'
+
         Returns:
-            the created model
+            ClassifierModel: Created decision tree model
         """
         hyperParameters = {'max_depth': max_depth, 'criterion': criterion}
 
@@ -507,6 +522,8 @@ class ModelFactory:
     def create_LogisticRegression(self, dataset, name, target, penalty='l2', C=1, solver='liblinear', split_ratio=0.7, enable_custom_discretizations=True,
                                   nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median'):
         """
+        create_LogisticRegression(dataset, name, target, penalty='l2', C=1, solver='liblinear', split_ratio=0.7, enable_custom_discretizations=True, nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median')
+
         Create a logistic regression model
 
         Args:
@@ -524,8 +541,9 @@ class ModelFactory:
             nbMaxModality (int): Maximum number of modalities per variable. Default is 50
             nbMinObservation (int): Modalities with a number of observations lower will be ignored. Default is 10
             replaceMissingValues (str): Method to replace missing values. Available methods are 'Median', 'Mean' and 'Delete'. Default is 'Delete'
+
         Returns:
-            the created model
+            ClassifierModel: Created logistic regression model
         """
         hyperParameters = {'penalty': penalty, 'C': C, 'solver': solver}
         discretizations = {}
@@ -547,6 +565,8 @@ class ModelFactory:
     def create_RandomForest(self, dataset, name, target, n_estimators=100, max_depth=2, criterion='gini', split_ratio=0.7, enable_custom_discretizations=True,
                             nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median'):
         """
+        create_RandomForest(dataset, name, target, n_estimators=100, max_depth=2, criterion='gini', split_ratio=0.7, enable_custom_discretizations=True, nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median')
+
         Create a random forest model
 
         Args:
@@ -563,8 +583,9 @@ class ModelFactory:
             nbMaxModality (int): Maximum number of modalities per variable. Default is 50
             nbMinObservation (int): Modalities with a number of observations lower will be ignored. Default is 10
             replaceMissingValues (str): Method to replace missing values. Available methods are 'Median', 'Mean' and 'Delete'. Default is 'Median'
+
         Returns:
-            the created model
+            ClassifierModel: Created random forest model
         """
         hyperParameters = {'n_estimators': n_estimators, 'max_depth': max_depth, 'criterion': criterion}
         discretizations = {}
@@ -586,6 +607,8 @@ class ModelFactory:
     def create_GradientBoosting(self, dataset, name, target, loss='deviance', n_estimators=100, maxdepth=3, split_ratio=0.7,
                                 enable_custom_discretizations=True, nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median'):
         """
+        create_GradientBoosting(dataset, name, target, loss='deviance', n_estimators=100, maxdepth=3, split_ratio=0.7, enable_custom_discretizations=True, nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median')
+
         Create a Gradient Boosting classifier
 
         Args:
@@ -602,8 +625,9 @@ class ModelFactory:
             nbMaxModality (int): Maximum number of modalities per variable. Default is 50
             nbMinObservation (int): Modalities with a number of observations lower will be ignored. Default is 10
             replaceMissingValues (str): Method to replace missing values. Available methods are 'Median', 'Mean' and 'Delete'. Default is 'Median'
+
         Returns:
-            the created model
+            ClassifierModel: Created gradient boosting model
         """
         hyperParameters = {'loss': loss, 'learning_rate': 0.1, 'n_estimators': n_estimators, 'max_depth': maxdepth}
         discretizations = {}
@@ -625,6 +649,8 @@ class ModelFactory:
     def create_GradientBoostingRegressor(self, dataset, name, target, n_estimators=100, maxdepth=3, split_ratio=0.7, enable_custom_discretizations=True,
                                          nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median'):
         """
+        create_GradientBoostingRegressor(dataset, name, target, n_estimators=100, maxdepth=3, split_ratio=0.7, enable_custom_discretizations=True, nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median')
+
         Create a Gradient Boosting regressor
 
         Args:
@@ -639,8 +665,9 @@ class ModelFactory:
             nbMaxModality (int): Maximum number of modalities per variable. Default is 50
             nbMinObservation (int): Modalities with a number of observations lower will be ignored. Default is 10
             replaceMissingValues (str): Method to replace missing values. Available methods are 'Median', 'Mean' and 'Delete'. Default is 'Median'
+
         Returns:
-            the created model
+            RegressorModel: Created gradient boosting model
         """
         hyperParameters = {'learning_rate': 0.1, 'n_estimators': n_estimators, 'max_depth': maxdepth}
         discretizations = {}
@@ -662,6 +689,8 @@ class ModelFactory:
     def create_XGBRegressor(self, dataset, name, target, n_estimators=100, maxdepth=3, split_ratio=0.7, enable_custom_discretizations=True,
                             nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median'):
         """
+        create_XGBRegressor(dataset, name, target, n_estimators=100, maxdepth=3, split_ratio=0.7, enable_custom_discretizations=True, nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median')
+
         Create a eXtreme Gradient Boosting (XGBoost) regressor
 
         Args:
@@ -676,7 +705,7 @@ class ModelFactory:
             nbMaxModality (int): Maximum number of modalities per variable. Default is 50
             nbMinObservation (int): Modalities with a number of observations lower will be ignored. Default is 10
         Returns:
-            the created model
+            RegressorModel: Created xgboost model
         """
 
         if self.__api.session.version < self.__api.session.version.__class__('4.2.10'):
@@ -702,6 +731,8 @@ class ModelFactory:
     def create_Lasso(self, dataset, name, target,  max_iter=1000, tol=0.0001, alpha=1.0, fit_intercept=True, normalize=False,
                      split_ratio=0.7, enable_custom_discretizations=True, nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median'):
         """
+        create_Lasso(dataset, name, target,  max_iter=1000, tol=0.0001, alpha=1.0, fit_intercept=True, normalize=False, split_ratio=0.7, enable_custom_discretizations=True, nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median')
+        
         Linear Model trained with L1 prior as regularizer (Lasso)
 
         Args:
@@ -720,7 +751,7 @@ class ModelFactory:
             nbMaxModality (int): Maximum number of modalities per variable. Default is 50
             nbMinObservation (int): Modalities with a number of observations lower will be ignored. Default is 10
         Returns:
-            the created model
+            RegressorModel: Created Lasso model
         """
 
         if self.__api.session.version < self.__api.session.version.__class__('4.2.10'):
@@ -748,6 +779,8 @@ class ModelFactory:
                           class_weight='balanced', method='isotonic', split_ratio=0.7, enable_custom_discretizations=True,
                           nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median'):
         """
+        create_Perceptron(dataset, name, target, penalty=None, alpha=1e-4,fit_intercept=True, max_iter=1000, tol=1e-3, class_weight='balanced', method='isotonic', split_ratio=0.7, enable_custom_discretizations=True, nbMaxModality=50, nbMinObservation=10, replaceMissingValues='Median')
+
         Create a Perceptron classifier model
 
         Args:
@@ -772,7 +805,7 @@ class ModelFactory:
             nbMinObservation (int): Modalities with a number of observations lower will be ignored. Default is 10
             replaceMissingValues (str): Method to replace missing values. Available methods are 'Median', 'Mean' and 'Delete'. Default is 'Median'
         Returns:
-            the created model
+            ClassifierModel: Created perceptron model
         """
 
         if self.__api.session.version < self.__api.session.version.__class__('4.2.10'):
@@ -893,7 +926,7 @@ class ModelFactory:
             replaceMissingValues (str): Method to replace missing values. Available methods are 'Median', 'Mean' and 'Delete'. Default is 'Median'
             
         Returns:
-            the created model
+            RegressorModel: Created time series forecaster model
         """
 
         if self.__api.session.version < self.__api.session.version.__class__('4.2.10'):
@@ -946,6 +979,7 @@ class ModelFactory:
 
 class Model(Base):
     """
+    Model()
     """
     def __init__(self, api, json_return):
         self.__api = api
@@ -970,22 +1004,37 @@ class Model(Base):
 
     @property
     def algoType(self):
+        '''
+        str: Algorithm type
+        '''
         return self.__json_returned.get('algoType')
 
     @property
     def dataset_name(self):
+        '''
+        str: Dataset name
+        '''
         return self.__json_returned.get('datasetName')
 
     @property
     def dataset_id(self):
+        '''
+        str: Dataset ID
+        '''
         return self.__json_returned.get('datasetId')
 
     @property
     def id(self):
+        '''
+        str: Model ID
+        '''
         return self.__json_returned.get('_id')
 
     @property
     def kpi_name(self):
+        '''
+        str: Target Name
+        '''
         return self.__json_returned.get('kpiName')
 
     @property
@@ -994,18 +1043,25 @@ class Model(Base):
 
     @property
     def name(self):
-        """
-        The model name.
-        """
+        '''
+        str: Model name
+        '''
         return self.__json_returned.get('modelName')
 
     @property
     @Helper.try_catch
     def created(self):
+        '''
+        datetime: Creation date
+        '''
         return self.str2date(self.__json_returned.get('createdAt'), '%Y-%m-%dT%H:%M:%S.%fZ')
 
     @Helper.try_catch
     def delete(self):
+        '''
+        delete()
+        Delete the Model.
+        '''
         if not self._is_deleted:
             json = {'project_ID': self.project_id, 'task_ID': self.id}
             self.__api.Task.deletetask(**json)
@@ -1015,6 +1071,7 @@ class Model(Base):
 
 class ClassifierModel(Model):
     """
+    ClassifierModel()
     """
     def __init__(self, api, json_return):
         self.__api = api
@@ -1025,6 +1082,8 @@ class ClassifierModel(Model):
     @Helper.try_catch
     def apply(self, dataset, applied_model_name, add_score_to_dataset=False, score_column_name=None):
         """
+        apply(dataset, applied_model_name, add_score_to_dataset=False, score_column_name=None)
+
         Apply the classifier model on a selected data set
 
         Args:
@@ -1035,7 +1094,7 @@ class ClassifierModel(Model):
             score_column_name (str): name of the score column, used only if add_score_to_dataset is set to True
 
         Returns:
-            the applied Model
+            ClassifierModel: the applied Model
         """
         params = dict(self.__json_returned)
         params['modelName'] = applied_model_name
@@ -1065,13 +1124,15 @@ class ClassifierModel(Model):
     @Helper.try_catch
     def preprocess_data(self, dataset):
         """
+        preprocess_data(dataset)
+
         Return a preprocessed dataframe for Scikit-learn models
 
         Args:
             dataset (Dataset): Dataset the model is applied on
 
         Returns:
-            preprocessed dataframe
+            pd.DataFrame: preprocessed dataframe
         """
         
         if not hasattr(self.__api.Prediction, "exportpreprocesseddata"):
@@ -1091,6 +1152,8 @@ class ClassifierModel(Model):
     @Helper.try_catch
     def export_scores(self, path, variables=None):
         """
+        export_scores(path, variables=None)
+
         Export the scores of this model in a csv file
 
         Args:
@@ -1122,6 +1185,8 @@ class ClassifierModel(Model):
     @Helper.try_catch
     def predict_scores(self, dataset, keep_applied_model=False):
         """
+        predict_scores(dataset, keep_applied_model=False)
+
         Predict target scores for input dataset
 
         Args:
@@ -1130,7 +1195,7 @@ class ClassifierModel(Model):
                 set this parameter to True if you want this model to be persisted. Default is False.
 
         Returns:
-            a NumPy array of shape [n_samples,] where n_samples is the number of samples in the input dataset
+            np.array: shape [n_samples,] where n_samples is the number of samples in the input dataset
         """
         pd = get_required_module('pandas')
 
@@ -1173,13 +1238,15 @@ class ClassifierModel(Model):
     @Helper.try_catch
     def get_confusion_matrix(self, top_score_ratio=0.1):
         """
+        get_confusion_matrix(top_score_ratio=0.1)
+
         Get the Confusion Matrix
 
         Args:
             top_score_ratio (float): must be greater or equal to 0 and lower or equal to 1, default=0.1.
 
         Returns:
-            ConfusionMatrix
+            ConfusionMatrix: Confusion matrix
         """
         if not 0 <= top_score_ratio <= 1:
             raise ApiException('top_score_ratio must be greater or equal to 0 and lower or equal to 1')
@@ -1200,6 +1267,11 @@ class ClassifierModel(Model):
     @property
     @Helper.try_catch
     def area_under_roc(self):
+        """
+        area_under_roc()
+
+        float: Area under the ROC curve
+        """
         self.__load_confusion_matrix()
         return self.__json_confusion_matrix[Curves.ROC][-1]['auc']
 
@@ -1234,6 +1306,8 @@ class ClassifierModel(Model):
     @Helper.try_catch
     def display_curve(self, curve=Curves.ROC, title=None, model_line=None, random_line=None, legend=None):
         """
+        display_curve(curve=Curves.ROC, title=None, model_line=None, random_line=None, legend=None)
+
         Plot the selected curve of this model
 
         Args:
@@ -1302,6 +1376,8 @@ class ClassifierModel(Model):
     @Helper.try_catch
     def export_model(self, path):
         """
+        export_model(path)
+
         Export this model in a local file
 
         Args:
@@ -1321,6 +1397,7 @@ class ClassifierModel(Model):
 
 class HyperCube(ClassifierModel):
     """
+    HyperCube()
     """
     def __init__(self, api, json_return):
         self.__api = api
@@ -1331,6 +1408,8 @@ class HyperCube(ClassifierModel):
     @Helper.try_catch
     def export_model(self, path, format=ExportFormats.PYTHON):
         """
+        export_model(path, format=ExportFormats.PYTHON)
+
         Export this model in a local file
 
         Args:
@@ -1362,6 +1441,7 @@ class HyperCube(ClassifierModel):
 
 class RegressorModel(Model):
     """
+    RegressorModel()
     """
     def __init__(self, api, json_return):
         self.__api = api
@@ -1371,6 +1451,8 @@ class RegressorModel(Model):
     @Helper.try_catch
     def apply(self, dataset, applied_model_name):
         """
+        apply(dataset, applied_model_name)
+
         Apply the model on a selected data set
 
         Args:
@@ -1378,7 +1460,7 @@ class RegressorModel(Model):
             applied_model_name (str): Name of the new applied model
 
         Returns:
-            the applied Model
+            RegressorModel: Applied Model
         """
         params = dict(self.__json_returned)
         params['modelName'] = applied_model_name
@@ -1406,13 +1488,15 @@ class RegressorModel(Model):
     @Helper.try_catch
     def preprocess_data(self, dataset):
         """
+        preprocess_data(dataset)
+
         Return a preprocessed dataframe for Scikit-learn models
 
         Args:
             dataset (Dataset): Dataset the model is applied on
 
         Returns:
-            preprocessed dataframe
+            pd.DataFrame: preprocessed dataframe
         """
 
         if not hasattr(self.__api.Prediction, "exportpreprocesseddata"):
@@ -1430,6 +1514,8 @@ class RegressorModel(Model):
     @Helper.try_catch
     def export_prediction(self, path, variables=None):
         """
+        export_prediction(path, variables=None)
+
         Export prediction of this model in a csv file
 
         Args:
@@ -1461,6 +1547,8 @@ class RegressorModel(Model):
     @Helper.try_catch
     def predict(self, dataset, keep_applied_model=False):
         """
+        predict(dataset, keep_applied_model=False)
+
         Target prediction for input dataset
 
         Args:
@@ -1469,7 +1557,7 @@ class RegressorModel(Model):
                 set this parameter to True if you want this model to be persisted. Default is False.
 
         Returns:
-            a NumPy array of shape [n_samples,] where n_samples is the number of samples in the input dataset
+            np.Array: shape [n_samples,] where n_samples is the number of samples in the input dataset
         """
         pd = get_required_module('pandas')
 
@@ -1507,6 +1595,8 @@ class RegressorModel(Model):
     @Helper.try_catch
     def export_model(self, path):
         """
+        export_model(path)
+
         Export this model in a local file
 
         Args:

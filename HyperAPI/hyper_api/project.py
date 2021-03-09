@@ -17,6 +17,7 @@ class ProjectFactory:
     @Helper.try_catch
     def create(self, name, description='', type_id=None, wait=False):
         """
+        create(name, description='', type_id=None, wait=False)
         Create a HyperCube project.
 
         Args:
@@ -26,8 +27,9 @@ class ProjectFactory:
                 available only for HDP versions equal to or later than 6.0.1
             wait (bool) : waits for the end of all works in the demo project specified by type_id, default is False
                 available only for HDP versions equal to or later than 6.0.1
+
         Returns:
-            Project
+            Project: Created project
         """
         if type_id is None or self.__api.session.version < self.__api.session.version.__class__('6.0.1'):
             json = {'name': name, 'description': description}
@@ -45,10 +47,11 @@ class ProjectFactory:
     @Helper.try_catch
     def filter(self):
         """
+        filter()
         Get all projects.
 
         Returns:
-            list of Project
+            list(Project): All projects
         """
         if self.__api.session.version >= self.__api.session.version.__class__('3.6'):
             return list(map(lambda x: Project(self.__api, {}, x), self.__api.Projects.projects()))        
@@ -57,13 +60,14 @@ class ProjectFactory:
     @Helper.try_catch
     def get(self, name):
         """
+        get(name)
         Returns a project found by name or None if no match.
 
         Args:
             name (str): The name of the project
 
         Returns:
-            Project or None
+            Project or None: Retrieved project
         """
         projects = list(filter(lambda x: x.name == name, self.filter()))
         if projects:
@@ -73,13 +77,14 @@ class ProjectFactory:
     @Helper.try_catch
     def get_by_id(self, project_id):
         """
+        get_by_id(project_id)
         Returns a project found by ID or None if no match.
 
         Args:
             id (str): ID of the project
 
         Returns:
-            Project or None
+            Project or None: Retrieved project
         """
         json = {'project_ID': project_id}
         json_returned = self.__api.Projects.getaproject(**json)
@@ -90,10 +95,11 @@ class ProjectFactory:
     @Helper.try_catch
     def get_default(self):
         """
+        get_default()
         Returns the default project.
 
         Returns:
-            Project
+            Project: Default project
         """
         if self.__api.session.version >= self.__api.session.version.__class__('3.6'):
             defaultProjectId = self.__api.Settings.getusersettings().get('defaultProjectId')
@@ -114,6 +120,7 @@ class ProjectFactory:
     @Helper.try_catch
     def get_or_create(self, name, description='', type_id=None, wait=False):
         """
+        get_or_create(name, description='', type_id=None, wait=False)
         Returns an existing project matching the given name. If no match, create a new project.
 
         Args:
@@ -123,7 +130,7 @@ class ProjectFactory:
             wait (bool) : waits for the end of all works in the demo project specified by type_id, default is False
 
         Returns:
-            Project
+            Project: retrieved or new project
         """
         _res = self.get(name)
         if _res is None:
@@ -134,6 +141,7 @@ class ProjectFactory:
 
 class Project(Base):
     """
+    Project()
     """
     def __init__(self, api, json_sent, json_return):
         self.__api = api
@@ -157,50 +165,35 @@ class Project(Base):
     @property
     def Dataset(self):
         """
-        This object includes utilities for creating and retrieving existing datasets in this project.
-
-        Returns:
-            An object of type DatasetFactory
+        DatasetFactory: Tool class for creating and retrieving existing datasets in this project
         """
         return DatasetFactory(self.__api, self.project_id)
 
     @property
     def Target(self):
         """
-        This object includes utilities for creating and retrieving existing targets in this project.
-
-        Returns:
-            An object of type TargetFactory
+        TargetFactory: Tool class for creating and retrieving existing targets in this project
         """
         return TargetFactory(self.__api, self.project_id)
 
     @property
     def Ruleset(self):
         """
-        This object includes utilities for creating and retrieving existing rulesets in this project.
-
-        Returns:
-            An object of type RulesetFactory
+        RulesetFactory: Tool class for creating and retrieving existing rulesets in this project
         """
         return RulesetFactory(self.__api, self.project_id)
 
     @property
     def Model(self):
         """
-        This object includes utilities for creating and retrieving existing models in this project.
-
-        Returns:
-            An object of type ModelFactory
+        ModelFactory: Tool class for creating and retrieving existing models in this project
         """
         return ModelFactory(self.__api, self.project_id)
 
     @property
     def AutomatedModel(self):
         """
-        This object includes utilities for creating and retrieving existing models in this project.
-
-        Returns:
-            An object of type ModelFactory
+        AutomatedModelFactory: Tool class for creating and retrieving existing automated models in this project
         """
         if hasattr(self.__api, 'AutomatedPrediction'):
             return AutomatedModelFactory(self.__api, self.project_id)
@@ -210,10 +203,7 @@ class Project(Base):
     @property
     def Xray(self):
         """
-        This object includes utilities for creating and retrieving existing Xrays in this project.
-
-        Returns:
-            An object of type XrayFactory
+         XrayFactory: Tool class for creating and retrieving existing automated XRays in this project
         """
         return XrayFactory(self.__api, self.project_id)
 
@@ -225,14 +215,14 @@ class Project(Base):
     @property
     def project_id(self):
         """
-        Returns project ID.
+        str: project ID
         """
         return self.__json_returned.get('_id')
 
     @property
     def is_default(self):
         """
-        Returns a boolean indicating if this project is the default project.
+        Boolean: indicating if this project is the default project
         """
         if self._is_deleted:
             return False
@@ -245,6 +235,9 @@ class Project(Base):
 
     @property
     def user_name(self):
+        """
+        str: User name
+        """
         owners = list(filter(lambda x: x["role"] == "O", self.__json_returned.get("users", [])))
         if len(owners) > 0:
             return owners[0].get("username", "")
@@ -254,28 +247,28 @@ class Project(Base):
     @property
     def datasets(self):
         """
-        Returns all datasets in this project.
+        list(Dataset): all datasets in this project
         """
         return self.Dataset.filter()
 
     @property
     def rulesets(self):
         """
-        Returns all rulesets in this project.
+        list(Ruleset): all rulesets in this project
         """
         return self.Ruleset.filter()
 
     @property
     def models(self):
         """
-        Returns all models in this project.
+        list(Models): all models in this project
         """
         return self.Model.filter()
 
     @property
     def targets(self):
         """
-        Returns all targets in this project.
+        list(Target): all targets in this project
         """
         target_family = self.Target.KPI_FAMILY_TARGET
         return [t for t in self.Target.filter() if t.indicator_family == target_family]
@@ -283,7 +276,7 @@ class Project(Base):
     @property
     def descriptions(self):
         """
-        Returns all descriptions in this project.
+        list: all descriptions in this project
         """
         description_family = self.Target.KPI_FAMILY_DESCRIPTION
         return [t for t in self.Target.filter() if t.indicator_family == description_family]
@@ -295,21 +288,21 @@ class Project(Base):
     @property
     def name(self):
         """
-        The project name.
+        str: Project name
         """
         return self.__json_returned.get('name')
 
     @property
     def description(self):
         """
-        The project description.
+        str: Project description
         """
         return self.__json_returned.get('description')
 
     @property
     def created(self):
         """
-        Creation date of this project.
+        datetime: Creation date of this project
         """
         created_date = None
         if 'createdOn' in self.__json_returned.keys():
@@ -326,6 +319,7 @@ class Project(Base):
     @Helper.try_catch
     def delete(self):
         """
+        delete()
         Delete this project.
         """
         if not self._is_deleted:
@@ -337,7 +331,11 @@ class Project(Base):
     @Helper.try_catch
     def set_as_default(self):
         """
+        set_as_default()
         Set this project as default.
+
+        Returns:
+            Project: The project itself
         """
         if not self._is_deleted:
             self.__json_sent = {
@@ -353,6 +351,13 @@ class Project(Base):
 
     @Helper.try_catch
     def update(self, **kwargs):
+        """
+        update()
+        Update this project.
+
+        Returns:
+            Project: The project itself
+        """
         if not self._is_deleted:
             json = dict([x for x in kwargs.items() if x[1] is not None])
             if json:

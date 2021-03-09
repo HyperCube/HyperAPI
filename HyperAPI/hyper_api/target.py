@@ -38,6 +38,8 @@ class TargetFactory:
     @Helper.try_catch
     def create(self, variable, modality=None, scoreTypes=None):
         """
+        create(variable, modality=None, scoreTypes=None)
+
         Create one target for the given variable.
 
         Args:
@@ -49,7 +51,7 @@ class TargetFactory:
                 [TargetFactory.KPI_SCORE_AVERAGE_VALUE] if variable is continuous.
 
         Returns:
-            (Target): The new target
+            Target: The new target
         """
 
         if variable.is_discrete:
@@ -84,6 +86,8 @@ class TargetFactory:
     @Helper.try_catch
     def create_targets(self, variable, modalities=None, scoreTypes=None):
         """
+        create_targets(variable, modalities=None, scoreTypes=None)
+
         Create several targets for the given variable, one per modality.
 
         Args:
@@ -93,8 +97,9 @@ class TargetFactory:
             scoreTypes (list of str): score types to be defined for the targets.
                 Default is [self.KPI_SCORE_PURITY, self.KPI_SCORE_COVERAGE] if variable is discrete and
                 [self.KPI_SCORE_AVERAGE_VALUE] if variable is continuous.
+
         Returns:
-            (list of Target): The new target(s)
+            list(Target): The new target(s)
         """
 
         if variable.is_discrete:
@@ -152,13 +157,15 @@ class TargetFactory:
     @Helper.try_catch
     def create_description(self, variable):
         """
+        create_description(variable)
+
         Create a description for the given variable.
 
         Args:
             variable (Variable): the variable defining the target
 
         Returns:
-            (Description): The new description
+            Description: The new description
         """
 
         targetData = [{
@@ -182,13 +189,15 @@ class TargetFactory:
     @Helper.try_catch
     def get(self, name):
         """
+        get(name)
+
         Get a target or description matching the given name
 
         Args:
             name (str): The name of the target or description
 
         Returns:
-            (KeyIndicator): The target, description or None
+            KeyIndicator: The target, description or None
         """
         kis = list(filter(lambda x: x.name == name, self.filter()))
         if kis:
@@ -198,13 +207,15 @@ class TargetFactory:
     @Helper.try_catch
     def get_by_id(self, id):
         """
+        get_by_id(id)
+
         Get a target or description matching the given ID
 
         Args:
             id (str): The ID of the target or description
 
         Returns:
-            (KeyIndicator): The target, description or None
+            KeyIndicator: The target, description or None
         """
         kis = [ki for ki in self.filter()
                if (ki.indicator_family == self.KPI_FAMILY_TARGET and id in ki.score_ids) or
@@ -216,10 +227,12 @@ class TargetFactory:
     @Helper.try_catch
     def filter(self):
         """
+        filter()
+
         Get all targets and descriptions in this project
 
         Returns:
-            (list of KeyIndicator): The targets and descriptions
+            list(KeyIndicator): The targets and descriptions
         """
         json = {'project_ID': self.__project_id}
         return list(map(lambda x: Target(self.__api, json, x)
@@ -230,6 +243,7 @@ class TargetFactory:
 
 class KeyIndicator(Base):
     """
+    KeyIndicator()
     """
     def __init__(self, api, json_sent, json_return):
         self.__api = api
@@ -252,39 +266,42 @@ class KeyIndicator(Base):
     @property
     def name(self):
         """
-        Returns the name of the target
+        str: Name of the target
         """
         return self.__json_returned.get('name')
 
     @property
     def project_id(self):
+        """
+        str: project ID
+        """
         return self.__json_returned.get('projectId')
 
     @property
     def indicator_type(self):
         """
-        Get the type of this indicator (Target.KPI_TYPE_DISCRETE or Target.KPI_TYPE_CONTINUOUS
-        or Target.KPI_TYPE_DISCRETE_MODALITY)
+        str: Type of this indicator ('Discrete variable with a modality', 'Continuous variable' or 'Ratio of 2 continuous variable')
         """
         return self.__json_returned.get('type')
 
     @property
     def indicator_family(self):
         """
-        Get the family of this indicator (Target.KPI_FAMILY_TARGET or Target.KPI_FAMILY_DESCRIPTION)
+        str: Family of this indicator ('target' or 'target_description')
         """
         return self.__json_returned.get('kpiFamily')
 
     @property
     def variable_name(self):
         """
-        Returns the name of the variable
+        str: Name of the variable
         """
         return self.__json_returned.get('variable')
 
 
 class Target(KeyIndicator):
     """
+    Target()
     """
     def __init__(self, api, json_sent, json_return):
         self.__api = api
@@ -299,12 +316,15 @@ class Target(KeyIndicator):
     @property
     def color_code(self):
         """
-        Returns the color code of the target
+        str: Color code of the target
         """
         return self.__json_returned.get('color')
 
     @property
     def modality(self):
+        """
+        str: Modality of the target
+        """
         if self.__type_id == 0:
             return self.__json_returned.get('modality')
         else:
@@ -312,15 +332,22 @@ class Target(KeyIndicator):
 
     @property
     def scores(self):
+        """
+        list(Dict): Score metrics
+        """
         return list(map(lambda x: x.get('type'), self.__json_returned.get('scores')))
 
     @property
     def score_ids(self):
+        '''
+        list(str): All score IDs
+        '''
         return list(map(lambda x: x.get('kpiId'), self.__json_returned.get('scores')))
 
     @Helper.try_catch
     def delete(self):
         """
+        delete()
         Delete the target
         """
         if not self._is_deleted:
@@ -332,6 +359,16 @@ class Target(KeyIndicator):
 
     @Helper.try_catch
     def update(self, name):
+        """
+        update(name)
+        Update target name
+
+        Args:
+            name (str): new target name
+
+        Returns:
+            Target: The target itself
+        """
         if not hasattr(self.__api.Kpi, 'updateKpi'):
             raise NotImplementedError('The feature is not available on this platform')
         data = {'kpis': self.score_ids, 'newName': name}
@@ -342,6 +379,7 @@ class Target(KeyIndicator):
 
 class Description(KeyIndicator):
     """
+    Description()
     """
     def __init__(self, api, json_sent, json_return):
         self.__api = api
@@ -364,6 +402,7 @@ class Description(KeyIndicator):
     @Helper.try_catch
     def delete(self):
         """
+        delete()
         Delete the Description
         """
         if not self._is_deleted:
@@ -375,6 +414,13 @@ class Description(KeyIndicator):
 
     @Helper.try_catch
     def update(self, name):
+        '''
+        update(name)
+        Update KPI description name
+
+        Returns
+            Description: updated description
+        '''
         if not hasattr(self.__api.Kpi, 'updateKpi'):
             raise NotImplementedError('The feature is not available on this platform')
         data = {'kpis': [self.score_id], 'newName': name}

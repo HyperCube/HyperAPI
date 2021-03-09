@@ -1,7 +1,7 @@
 from HyperAPI.util import Helper
 from HyperAPI.hyper_api.target import Description
 from HyperAPI.hyper_api.base import Base
-from HyperAPI.hyper_api.model import ModelFactory
+from HyperAPI.hyper_api.model import Model, ModelFactory
 from HyperAPI.hyper_api.rule import Rules, decode_kpiname_to_id
 from HyperAPI.utils.exceptions import ApiException
 
@@ -72,6 +72,8 @@ class RulesetFactory:
                           average_value_min=None, average_value_max=None, standard_deviation_min=None, standard_deviation_max=None,
                           shift_min=None, shift_max=None):
         """
+        create_kpi_option(target, purity_min=None, purity_max=None, coverage_min=None, coverage_max=None, lift_min=None, lift_max=None, zscore_min=None, zscore_max=None, average_value_min=None, average_value_max=None, standard_deviation_min=None, standard_deviation_max=None, shift_min=None, shift_max=None)
+
         Create an additional key indicator
 
         Args:
@@ -107,6 +109,8 @@ class RulesetFactory:
                locally_increase_complexity=False, max_complexity=3, nb_minimizations=1, coverage_increment=0.01,
                validate_stability=False, split_ratio=0.7, nb_iterations=1, purity_tolerance=0.1):
         """
+        create(dataset, name, target, purity_min=None, coverage_min=None, lift_min=None, zscore_min=None, average_value_min=None, standard_deviation_max=None, shift_min=None, rule_complexity=2, quantiles=10, enable_custom_discretizations=True, min_marginal_contribution=None, compute_other_key_indicators=None, locally_increase_complexity=False, max_complexity=3, nb_minimizations=1, coverage_increment=0.01, validate_stability=False, split_ratio=0.7, nb_iterations=1, purity_tolerance=0.1)
+
         Create a new ruleset
 
         Args:
@@ -305,10 +309,12 @@ class RulesetFactory:
     @Helper.try_catch
     def filter(self):
         """
+        filter()
+
         Get all the rulesets of the project.
 
         Returns:
-            List of ruleset
+            list(Ruleset): all the rulesets
         """
         from HyperAPI.hyper_api.dataset import DatasetFactory
         factory = DatasetFactory(self.__api, self.__project_id)
@@ -318,6 +324,8 @@ class RulesetFactory:
     @Helper.try_catch
     def minimize(self, ruleset, minimization_name, score_to_minimize='Purity', increment_threshold=0.01):
         """
+        minimize(ruleset, minimization_name, score_to_minimize='Purity', increment_threshold=0.01)
+
         Perform a minimzation on a given ruleset.
 
         Args:
@@ -327,7 +335,7 @@ class RulesetFactory:
             increment_threshold (float): Percentage increment of target samples that a new rule must bring to be added to the minimized ruleset, default is 0.01
 
         Return:
-            Ruleset
+            Ruleset: Minimized ruleset
         """
         json = {
             "type": "minimization",
@@ -353,13 +361,15 @@ class RulesetFactory:
 
     def get(self, name):
         """
+        get(name)
+
         Get a ruleset by name
 
         Args:
             name (str): Name of the ruleset
 
         Returns:
-            Ruleset
+            Ruleset: Retrieved ruleset
         """
         try:
             return [ruleset for ruleset in self.filter() if ruleset.name == name][0]
@@ -369,13 +379,15 @@ class RulesetFactory:
     @Helper.try_catch
     def get_by_id(self, id):
         """
+        get_by_id(id)
+
         Get the ruleset matching the given ID or None if there is no match
 
         Args:
             id (str): ID of the ruleset
 
         Returns:
-            The Ruleset or None
+            Ruleset or None: retrieved ruleset
         """
         rulesets = [ruleset for ruleset in self.filter() if ruleset.id == id]
         if rulesets:
@@ -388,6 +400,8 @@ class RulesetFactory:
                       locally_increase_complexity=False, max_complexity=3, nb_minimizations=1, coverage_increment=0.01,
                       validate_stability=False, split_ratio=0.7, nb_iterations=1, purity_tolerance=0.1):
         """
+        get_or_create(dataset, name, target=None, purity_min=None, coverage_min=None, lift_min=None, zscore_min=None, average_value_min=None, standard_deviation_max=None, shift_min=None, rule_complexity=2, quantiles=10, enable_custom_discretizations=True, min_marginal_contribution=None, compute_other_key_indicators=None, locally_increase_complexity=False, max_complexity=3, nb_minimizations=1, coverage_increment=0.01, validate_stability=False, split_ratio=0.7, nb_iterations=1, purity_tolerance=0.1)
+
         Get or create a ruleset, if the ruleset exists, only the name is mandatory
 
         Args:
@@ -418,7 +432,7 @@ class RulesetFactory:
             purity_tolerance (float): Purity tolerence allowed (Between 0 and 1). Default is 0.1
 
         Returns:
-            Ruleset
+            Ruleset: Retrieved or created ruleset
         """
 
         for ruleset in dataset.rulesets:
@@ -433,6 +447,7 @@ class RulesetFactory:
 
 class Ruleset(Base):
     """
+    Ruleset()
     """
     def __init__(self, factory, api, dataset, json_return):
         self.__api = api
@@ -466,7 +481,7 @@ class Ruleset(Base):
     @property
     def name(self):
         """
-        Returns the ruleset name.
+        str: Ruleset name
         """
         if self.__json_returned.get('tag') is not None:
             if type(self.__json_returned.get('tag')) == str:
@@ -479,7 +494,7 @@ class Ruleset(Base):
     @property
     def kpis(self):
         """
-        Returns the kpis of the ruleset or None if Ruleset is in error
+        list(dict): Kpis of the ruleset
         """
         if self._is_in_error:
             return None
@@ -488,20 +503,29 @@ class Ruleset(Base):
     @property
     def rules_count(self):
         """
-        Returns the number of rules in the ruleset or None if Ruleset is in error
+        int: Number of rules in the ruleset
         """
         return self.__json_returned.get('rulesCount', None)
 
     @property
     def dataset_id(self):
+        """
+        str: Dataset ID
+        """
         return self.__json_returned.get('datasetId')
 
     @property
     def project_id(self):
+        """
+        str: Project ID
+        """
         return self.__json_returned.get('projectId')
 
     @property
     def created(self):
+        """
+        datetime: Created date
+        """
         createdAt = self.__json_returned.get('lastChangeAt', self.__json_returned.get('createdAt'))
         if createdAt.find('.') > 0:
             return self.str2date(createdAt, '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -510,7 +534,7 @@ class Ruleset(Base):
     @property
     def id(self):
         """
-        Returns the ruleset ID.
+        str: Ruleset ID
         """
         return self.__json_returned.get('_id')
 
@@ -528,6 +552,8 @@ class Ruleset(Base):
     @Helper.try_catch
     def delete(self):
         """
+        delete()
+
         Delete the ruleset
         """
         if not self._is_deleted:
@@ -545,6 +571,8 @@ class Ruleset(Base):
     @Helper.try_catch
     def minimize(self, minimization_name, score_to_minimize='Purity', increment_threshold=0.01):
         """
+        minimize(minimization_name, score_to_minimize='Purity', increment_threshold=0.01)
+
         Function to apply a minimization on a ruleset
 
         Args:
@@ -553,7 +581,7 @@ class Ruleset(Base):
             increment_threshold (float): Percentage increment of target samples that a new rule must bring to be added to the minimized ruleset. Default is 0.01
 
         Returns:
-            Ruleset or None if Ruleset is deleted / in error
+            Ruleset or None: minimized ruleset of None if ruleset is deleted / in error
         """
         if not self._is_deleted and not self._is_in_error:
             return self.__factory.minimize(self, minimization_name, score_to_minimize, increment_threshold)
@@ -562,6 +590,8 @@ class Ruleset(Base):
     @Helper.try_catch
     def get_rules(self, skip=0, limit=100, sort=None, min_scores=[], max_scores=[], include_variables=[], exclude_variables=[], include_tags=[], exclude_tags=[]):
         """
+        get_rules(skip=0, limit=100, sort=None, min_scores=[], max_scores=[], include_variables=[], exclude_variables=[], include_tags=[], exclude_tags=[])
+
         Args:
             skip (int): Number of rules to skip, default is 0
             limit (int): Number of rules to get, default is 100
@@ -575,17 +605,17 @@ class Ruleset(Base):
             max_scores (array): Array of maximum value for a score. 
                 (logical AND between several values)
                 Example: [{'score': 'Purity', 'value': 0,9}, {'score': 'Coverage', 'value': 300}]
-            include_variables (array): Array of variable names to include (logical OR between several values)
-            exclude_variables (array): Array of variable names to exclude (logical OR between several values)
-            include_tags (array): Array of variable tags to include (logical OR between several values)
-            exclude_tags (array): Array of variable tags to exclude (logical OR between several values)
+            include_variables (array): Array of variable names to include
+            exclude_variables (array): Array of variables names to exclude 
+            include_tags (array): Array of variables tags to include 
+            exclude_tags (array): Array of variables tags to exclude 
 
         Returns:
-            List of rules or None if Ruleset is deleted / in error
+            list(rules) or None: All the rules of None if Ruleset is deleted / in error
         """
         if not self._is_deleted and not self._is_in_error:
             # _params is used in HDP version elder than 6.0 whereas _query is used in later versions
-            _params = {'skip': 0,
+            _params = {'skip': skip,
                     'limit': limit,
                     'tagsfilter': self.name
                     }
@@ -693,16 +723,19 @@ class Ruleset(Base):
             if exclude_variables:
                 if isinstance(exclude_variables, str):
                     exclude_variables = [exclude_variables]
+                _params['varexclus'] = urllib.parse.quote(','.join(exclude_variables), safe='~()*!.\'')
                 variables_or_tags_param["exclude_lists"]["variables"] = exclude_variables
 
             if include_tags:
                 if isinstance(include_tags, str):
                     include_tags = [include_tags]
+                _params['varTagInclus'] = urllib.parse.quote(','.join(include_tags), safe='~()*!.\'')
                 variables_or_tags_param["include_lists"]["tags"] = include_tags
 
             if exclude_tags:
                 if isinstance(exclude_tags, str):
                     exclude_tags = [exclude_tags]
+                _params['varTagExclus'] = urllib.parse.quote(','.join(exclude_tags), safe='~()*!.\'')
                 variables_or_tags_param["exclude_lists"]["tags"] = exclude_tags
 
             _query["params"]["variablesOrTags"] = variables_or_tags_param
@@ -714,8 +747,11 @@ class Ruleset(Base):
             return Rules(self.__api, json_returned, self.kpis, self.project_id, self.dataset_id)
         return None
 
+    @Helper.try_catch
     def predict(self, dataset, name, target, nb_minimizations=1, coverage_increment=0.01):
         """
+        predict(dataset, name, target, nb_minimizations=1, coverage_increment=0.01)
+
         Create a prediction model from the ruleset
 
         Args:
@@ -727,7 +763,7 @@ class Ruleset(Base):
                 default is 0.01
 
         Returns:
-            Model or None if Ruleset is deleted / in error
+            Model or None: Model or None if the ruleset is deleted / in error
         """
         if not self._is_deleted and not self._is_in_error:
             return ModelFactory(self.__api, self.project_id).predict_from_ruleset(self.__dataset, dataset, self.name, name, target,

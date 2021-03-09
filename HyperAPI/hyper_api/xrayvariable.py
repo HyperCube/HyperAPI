@@ -12,8 +12,10 @@ class XRayVariableFactory:
     @Helper.try_catch
     def filter(self):
         """
-            Returns:
-                XRayVariable[]: list of variables in the current Xray
+        filter()
+
+        Returns:
+            list(XRayVariable): list of variables in the current Xray
         """
         json = {'project_ID': self.__xray.project_id, 'dataset_ID': self.__xray.dataset_id, 'simpleLift_ID': self.__xray.id}
         return [XRayVariable(self.__api, self.__xray, x) for x in self.__api.SimpleLift.getsimplelift(**json).get('variables')]
@@ -21,8 +23,10 @@ class XRayVariableFactory:
     @Helper.try_catch
     def get(self, name):
         """
-            Returns:
-                XRayVariable: Xray variable found by name
+        get(name)
+
+        Returns:
+            XRayVariable: Xray variable found by name
         """
         xray_variables = list(filter(lambda x: x.name == name, self.filter()))
         if xray_variables:
@@ -32,8 +36,10 @@ class XRayVariableFactory:
     @Helper.try_catch
     def get_by_column_id(self, column_id):
         """
-            Returns:
-                XRayVariable: XRay variable found by column_id
+        get_by_column_id(column_id)
+
+        Returns:
+            XRayVariable: XRay variable found by column_id
         """
         xray_variables = list(filter(lambda x: x.column_id == column_id, self.filter()))
         if xray_variables:
@@ -43,14 +49,16 @@ class XRayVariableFactory:
     @Helper.try_catch
     def sort(self, contrast_rate=None, reverse=True):
         """
-            sort Xray variables (default is by decreasing constrast rate on first target)
+        sort(contrast_rate=None, reverse=True)
 
-            Args:
-                contrast_rate: name of the variable on which sorting by contrast rate will be done
-                reverse (bool): order to reverse (default: True => decreasing)
+        sort Xray variables (default is by decreasing constrast rate on first target)
 
-            Returns:
-                XRayVariable[]: list of variables in the current Xray
+        Args:
+            contrast_rate: name of the variable on which sorting by contrast rate will be done
+            reverse (bool): order to reverse (default: True => decreasing)
+
+        Returns:
+            XRayVariable[]: list of variables in the current Xray
         """
         xray_variables = self.filter()
 
@@ -63,6 +71,7 @@ class XRayVariableFactory:
 
 class XRayVariable(Base):
     """
+    XRayVariable()
     """
     def __init__(self, api, xray, json_return):
         self.__api = api

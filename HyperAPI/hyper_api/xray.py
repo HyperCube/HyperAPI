@@ -44,6 +44,8 @@ class XrayFactory:
     def create(self, dataset, name, target=None, targets=None,
                quantiles=10, enable_custom_discretizations=True):
         """
+        create(dataset, name, target=None, targets=None, quantiles=10, enable_custom_discretizations=True)
+
         Args:
             dataset (Dataset) : dataset on which Xray will be created
             name (str): name of the Xray to create
@@ -53,7 +55,7 @@ class XrayFactory:
             enable_custom_discretizations (boolean): use custom discretizations, eventually use "quantiles" parameter for remaining variables, default is True
 
         Returns:
-            Xray
+            Xray: Xray
         """
         if enable_custom_discretizations is True:
             discretizations = dataset._discretizations
@@ -96,10 +98,12 @@ class XrayFactory:
     @Helper.try_catch
     def filter(self):
         """
+        filter()
+
         Get all xrays.
 
         Returns:
-            list of Xrays on the current project
+            list(Xray): All Xrays on the current project
         """
         json = {'project_ID': self.__project_id}
         return [Xray(self.__api, x) for x in self.__api.SimpleLift.getsimplelifts(**json)]
@@ -107,13 +111,15 @@ class XrayFactory:
     @Helper.try_catch
     def get(self, name):
         """
+        get(name)
+
         Get an xray matching the given name on the current project
 
         Args:
             name (str): The name of the Xray
 
         Returns:
-            Xray found by name
+            Xray: Xray found by name
         """
         xrays = list(filter(lambda x: x.name == name, self.filter()))
         if xrays:
@@ -123,13 +129,15 @@ class XrayFactory:
     @Helper.try_catch
     def get_by_id(self, id):
         """
+        get_by_id(id)
+
         Get an xray matching the given ID on the current project
 
         Args:
             id (str): The ID of the Xray
 
         Returns:
-            Xray found by id
+            Xray: Xray found by id
         """
         xrays = list(filter(lambda x: x.id == id, self.filter()))
         if xrays:
@@ -139,6 +147,8 @@ class XrayFactory:
     @Helper.try_catch
     def get_or_create(self, dataset, name, target=None, targets=None, quantiles=10, enable_custom_discretizations=True):
         """
+        get_or_create(dataset, name, target=None, targets=None, quantiles=10, enable_custom_discretizations=True)
+
         find a Xray by name, or create it if not found
 
         Args:
@@ -150,7 +160,7 @@ class XrayFactory:
             enable_custom_discretizations (boolean): use custom discretizations, eventually use "quantiles" parameter for remaining variables, default is True
 
         Returns:
-            found or created Xray (Xray)
+            Xray: found or created Xray (Xray)
         """
 
         for xray in dataset.xrays:
@@ -163,6 +173,7 @@ class XrayFactory:
 
 class Xray(Base):
     """
+    Xray()
     """
     def __init__(self, api, json_return):
         self.__api = api
@@ -197,44 +208,73 @@ class Xray(Base):
 
     @property
     def discretizations(self):
+        """
+        Dict: description about variable discretizations
+        """
         return self.__json_returned.get('discretizations')
 
     @property
     def name(self):
+        """
+        str: Project name
+        """
         return self.__json_returned.get('name')
 
     @property
     def project_id(self):
+        """
+        str: Project ID
+        """
         return self.__json_returned.get('projectId')
 
     @property
     def dataset_id(self):
+        """
+        str: Dataset ID
+        """
         return self.__json_returned.get('datasetId')
 
     @property
     def dataset_name(self):
+        """
+        str: Dataset name
+        """
         return self.__json_returned.get('datasetName')
 
     @property
     def quantiles(self):
+        """
+        int: Number of quantiles
+        """
         return self.__json_returned.get('quantiles')
 
     @property
     def id(self):
+        """
+        str: XRay ID
+        """
         return self.__json_returned.get('_id')
 
     @property
     def variables(self):
+        """
+        list(XRayVariable): All XRay variables 
+        """
         if not self._is_deleted:
             return self.Variable.sort()
 
     @property
     def created(self):
+        """
+        datetime: Created date
+        """
         return self.str2date(self.__json_returned.get('createdAt'), '%Y-%m-%dT%H:%M:%S.%fZ')
 
     @Helper.try_catch
     def delete(self):
         """
+        delete()
+
         Delete this X-ray
         """
         if not self._is_deleted:

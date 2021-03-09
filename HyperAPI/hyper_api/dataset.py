@@ -6,9 +6,9 @@ from HyperAPI.util import Helper
 from HyperAPI.utils.exceptions import ApiException
 from HyperAPI.utils.imports import get_required_module
 from HyperAPI.hyper_api.base import Base
-from HyperAPI.hyper_api.variable import VariableFactory
-from HyperAPI.hyper_api.xray import XrayFactory
-from HyperAPI.hyper_api.ruleset import RulesetFactory
+from HyperAPI.hyper_api.variable import Variable, VariableFactory
+from HyperAPI.hyper_api.xray import Xray, XrayFactory
+from HyperAPI.hyper_api.ruleset import Ruleset, RulesetFactory
 
 
 class DatasetFactory:
@@ -27,7 +27,10 @@ class DatasetFactory:
                description='', modalities=2, continuous_threshold=0.95, missing_threshold=0.95,
                metadata_file_path=None, discreteDict_file_path=None, keepVariableName=None):
         """
+        create(name, file_path, decimal='.',delimiter='semicolon', encoding='UTF-8', selectedSheet=1, description='', modalities=2, continuous_threshold=0.95, missing_threshold=0.95, metadata_file_path=None, discreteDict_file_path=None, keepVariableName=None)
+
         Create a Dataset from a file (csv, Excel)
+
         Args:
             name (str): The name of the dataset
             file_path (str): The origin path of the file
@@ -39,8 +42,9 @@ class DatasetFactory:
             modalities (int): Modality threshold for discrete variables, default is 2
             continuous_threshold (float): % of continuous values threshold for continuous variables, default is 0.95
             missing_threshold (float): % of missing values threshold for ignored variables, default is 0.95
+
         Returns:
-            Dataset
+            Dataset: Created dataset
         """
 
         project_id = self.__project_id
@@ -154,7 +158,10 @@ class DatasetFactory:
                               continuous_threshold=0.95, missing_threshold=0.95,
                               metadata=None, discreteDict=None, keepVariableName=None):
         """
+        create_from_dataframe(name, dataframe, description='', modalities=2, continuous_threshold=0.95, missing_threshold=0.95, metadata=None, discreteDict=None, keepVariableName=None)
+            
         Create a Dataset from a Pandas DataFrame
+
         Args:
             name (str): The name of the dataset
             dataframe (pandas.DataFrame): The dataframe to import
@@ -162,8 +169,9 @@ class DatasetFactory:
             modalities (int): Modality threshold for discrete variables, default is 2
             continuous_threshold (float): % of continuous values threshold for continuous variables ,default is 0.95
             missing_threshold (float): % of missing values threshold for ignored variables, default is 0.95
+
         Returns:
-            Dataset
+            Dataset: Created dataset
         """
         project_id = self.__project_id
         file_name = '{}.csv'.format(uuid.uuid4())
@@ -241,8 +249,11 @@ class DatasetFactory:
     def create_from_sql(self, name, connection_string, query, description='', modalities=2,
                         continuous_threshold=0.95, missing_threshold=0.95):
         """
+        create_from_sql(name, connection_string, query, description='', modalities=2, continuous_threshold=0.95, missing_threshold=0.95)
+
         Create a Dataset from a sql database.
         Supported systems : PostgreSql
+
         Args:
             name (str): The name of the dataset
             connection_string (str): The connection string to the database (format : 'postgresql://username:password@host:port/database')
@@ -251,8 +262,9 @@ class DatasetFactory:
             modalities (int): Modality threshold for discrete variables, default is 2
             continuous_threshold (float): % of continuous values threshold for continuous variables, default is 0.95
             missing_threshold (float): % of missing values threshold for ignored variables, default is 0.95
+
         Returns:
-            Dataset
+            Dataset: created Dataset
         """
         project_id = self.__project_id
         SEPARATOR = "semicolon"
@@ -288,9 +300,11 @@ class DatasetFactory:
     @Helper.try_catch
     def filter(self):
         """
+        filter()
         Get all datasets. Returns a list of datasets in the selected project.
+
         Returns:
-            list of Dataset
+            list(Dataset): All datasets belonging to the project
         """
         json = {'project_ID': self.__project_id}
         return list(map(lambda x: Dataset(self.__api, json, x), self.__api.Datasets.datasets(**json)))
@@ -298,11 +312,14 @@ class DatasetFactory:
     @Helper.try_catch
     def get(self, name):
         """
+        get(name)
         Returns a dataset found by name or None if no match.
+
         Args:
             name (str): The name of the dataset
+
         Returns:
-            Dataset or None
+            Dataset or None: Retrieved dataset
         """
         datasets = list(filter(lambda x: x.name == name, self.filter()))
         if datasets:
@@ -312,11 +329,14 @@ class DatasetFactory:
     @Helper.try_catch
     def get_by_id(self, id):
         """
+        get_by_id(id)
         Returns a dataset found by ID or None if no match.
+
         Args:
             id (str): The ID of the dataset
+
         Returns:
-            Dataset or None
+            Dataset or None: Retrieved dataset
         """
         json = {'project_ID': self.__project_id, 'dataset_ID': id}
         return Dataset(self.__api, json, self.__api.Datasets.getadataset(**json))
@@ -324,9 +344,11 @@ class DatasetFactory:
     @Helper.try_catch
     def get_default(self):
         """
-        Returns the default dataset in this project.
+        get_default()
+        Get the default dataset of this project.
+
         Returns:
-            Dataset
+            Dataset: Default dataset
         """
         if self.__api.session.version >= self.__api.session.version.__class__('3.6'):
             project_json = self.__api.Projects.getaproject(project_ID=self.__project_id)
@@ -341,7 +363,10 @@ class DatasetFactory:
     def get_or_create(self, name, file_path, decimal='.', delimiter=';', encoding='UTF-8', selectedSheet=1,
                       description='', modalities=2, continuous_threshold=0.95, missing_threshold=0.95):
         """
-        Returns an existing dataset matching the given name. If no match, create a new dataset from a file (csv, Excel).
+        get_or_create(name, file_path, decimal='.', delimiter=';', encoding='UTF-8', selectedSheet=1, description='', modalities=2, continuous_threshold=0.95, missing_threshold=0.95)
+
+        Get an existing dataset matching the given name. If no match, create a new dataset from a file (csv, Excel).
+        
         Args:
             name (str): The name of the dataset
             file_path (str): The origin path of the file
@@ -353,8 +378,9 @@ class DatasetFactory:
             modalities (int): Modality threshold for discrete variables, default is 2
             continuous_threshold (float): % of continuous values threshold for continuous variables, default is 0.95
             missing_threshold (float): % of missing values threshold for ignored variables, default is 0.95
+
         Returns:
-            Dataset
+            Dataset: Retrieved or created dataset
         """
         return self.get(name) or self.create(name=name,
                                              file_path=file_path,
@@ -370,6 +396,7 @@ class DatasetFactory:
 
 class Dataset(Base):
     """
+    Dataset()
     """
     def __init__(self, api, json_sent, json_return):
         self.__api = api
@@ -397,20 +424,13 @@ class Dataset(Base):
     @property
     def Variable(self):
         """
-        This object includes utilities for retrieving and interacting with variables on this dataset.
-        Returns:
-            An object of type VariableFactory
+        VariableFactory: Tool class for creating and retrieving existing variables in this project
         """
         return self.__Variable
 
     # Property part
     @property
     def _json(self):
-        """
-        This object includes utilities for retrieving and interacting with variables on this dataset.
-        Returns:
-            An object of type VariableFactory
-        """
         return self.__json_returned
 
     @property
@@ -425,33 +445,36 @@ class Dataset(Base):
     @property
     def dataset_id(self):
         """
-        Returns dataset ID.
+        str: Dataset ID
         """
         return self.__json_returned.get('_id')
 
     @property
     def name(self):
         """
-        The dataset name.
+        str: Dataset name
         """
         return self.__json_returned.get('datasetName')
 
     @property
     def description(self):
         """
-        Returns all descriptions in this dataset.
+        str: Dataset description
         """
         return self.__json_returned.get('description')
 
     @property
     def size(self):
         """
-        Size in bytes.
+        int: Size in bytes
         """
         return self.__json_returned.get('size')
 
     @property
     def created(self):
+        """
+        datetime: Created date
+        """
         created_date = None
         if 'createdOn' in self.__json_returned.keys():
             created_date = self.__json_returned.get('createdOn')
@@ -465,18 +488,30 @@ class Dataset(Base):
 
     @property
     def modified(self):
+        """
+        datetime: last modification date
+        """
         return self.str2date(self.__json_returned.get('modified'), '%Y-%m-%dT%H:%M:%S.%fZ')
 
     @property
     def source_file_name(self):
+        """
+        str: source file name
+        """
         return self.__json_returned.get('sourceFileName')
 
     @property
     def project_id(self):
+        """
+        str: project ID
+        """
         return self.__json_returned.get('projectId')
 
     @property
     def is_default(self):
+        """
+        Boolean: indicating if this project is the default project.
+        """
         if self._is_deleted:
             return False
         json = {'project_ID': self.project_id}
@@ -495,28 +530,44 @@ class Dataset(Base):
 
     @property
     def separator(self):
+        """
+        str: field separator in the source file.
+        """
         return self.__json_returned.get('separator')
 
     @property
     def delimiter(self):
+        """
+        str: decimal delimiter in the source file.
+        """
         return self.__json_returned.get('delimiter')
 
     @property
     def xrays(self):
+        """
+        list(Xray): All XRays related on the current dataset.
+        """
         return list(filter(lambda x: x.dataset_id == self.dataset_id, self.__Xray.filter()))
 
     @property
     def rulesets(self):
+        """
+        list(Ruleset): All rulesets related on the current dataset.
+        """
         return list(filter(lambda x: x.dataset_id == self.dataset_id, self.__Ruleset.filter()))
 
     @property
     def variables(self):
+        """
+        list(Variable): All variables related on the current dataset.
+        """
         return list(self.__Variable.filter())
 
     # Method part
     @Helper.try_catch
     def delete(self):
         """
+        delete()
         Delete this dataset.
         """
         if not self._is_deleted:
@@ -528,7 +579,11 @@ class Dataset(Base):
     @Helper.try_catch
     def set_as_default(self):
         """
+        set_as_default()
         Set this dataset as default.
+
+        Returns:
+            Dataset: the dataset itself
         """
         if not self._is_deleted:
             if self.__api.session.version >= self.__api.session.version.__class__('3.6'):
@@ -544,7 +599,10 @@ class Dataset(Base):
     def split(self, train_ratio=0.7, random_state=42, keep_proportion_variable=None, train_dataset_name=None,
               train_dataset_desc=None, test_dataset_name=None, test_dataset_desc=None):
         """
+        split(train_ratio=0.7, random_state=42, keep_proportion_variable=None, train_dataset_name=None, train_dataset_desc=None, test_dataset_name=None, test_dataset_desc=None)
+        
         Split the dataset into two subsets for training and testing models.
+
         Args:
             train_ratio (float): ratio between training set size and original data set size, default = 0.7
             random_state (int): seed used by the random number generator, default = 42
@@ -554,8 +612,9 @@ class Dataset(Base):
             train_dataset_desc (str): description of the training set, default = None
             test_dataset_name (str): name of the test set, default = None
             test_dataset_desc (str): description of the test set, default = None
+
         Returns:
-            The new training and test datasets
+            (Dataset, Dataset): The new training and test datasets
         """
         if not self._is_deleted:
             if not 0 < train_ratio < 1:
@@ -641,7 +700,9 @@ class Dataset(Base):
     @Helper.try_catch
     def export_csv(self, path):
         """
+        export_csv(path)
         Export the dataset to a csv file
+
         Args:
             path (str): The destination path for the resulting csv
         """
@@ -652,9 +713,11 @@ class Dataset(Base):
     @Helper.try_catch
     def export_dataframe(self):
         """
+        export_dataframe()
         Export the dataset to a Pandas DataFrame
+
         Returns:
-            DataFrame
+            pd.DataFrame: exported dataset
         """
         if not self._is_deleted:
             pd = get_required_module('pandas')
@@ -670,7 +733,11 @@ class Dataset(Base):
     @Helper.try_catch
     def get_metadata(self):
         """
+        get_metadata()
         Get dataset metadata
+
+        Returns:
+            Dict: metadata
         """
         if not self._is_deleted:
             return self.__api.Datasets.exportmetadata(project_ID=self.project_id,
@@ -680,6 +747,9 @@ class Dataset(Base):
     def _get_discreteDict(self):
         """
         Get dataset DiscreteDict
+
+        Returns:
+            Dict: discreteDict
         """
         if not hasattr(self.__api.Datasets, "exportdiscretedict"):
             raise NotImplementedError('The feature is not available on this platform')
@@ -692,7 +762,10 @@ class Dataset(Base):
     def encode_dataframe(self, name, dataframe, description='', modalities=2,
                          continuous_threshold=0.95, missing_threshold=0.95):
         '''
+        encode_dataframe(name, dataframe, description='', modalities=2, continuous_threshold=0.95, missing_threshold=0.95)
+
         Create a new dataset from a dataframe with the same encoding than the current dataset
+
         Args:
             name (str): The name of the dataset
             dataframe (pandas.DataFrame): The dataframe to import
@@ -702,7 +775,7 @@ class Dataset(Base):
             missing_threshold (float): % of missing values threshold for ignored variables, default is 0.95
 
         Returns:
-            Dataset
+            Dataset: Encoded dataset
         '''
         metadata = self.get_metadata()
         oldNames = set([

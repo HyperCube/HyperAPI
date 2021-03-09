@@ -18,39 +18,46 @@ Project
 
 .. automodule:: project
    :members:
+   :member-order: bysource
 
 Dataset
 -------
 
 .. automodule:: dataset
    :members:
+   :member-order: bysource
 
 Target
 ------
 
 .. automodule:: target
    :members:
+   :member-order: bysource
 
 Xray
 ----
 
 .. automodule:: xray
    :members:
+   :member-order: bysource
 
 .. automodule:: xrayvariable
    :members:
+   :member-order: bysource
    
 Ruleset
 -------
 
 .. automodule:: ruleset
    :members:
+   :member-order: bysource
    
 Model
 -----
 
 .. automodule:: model
    :members:
+   :member-order: bysource
    
 Examples
 ==================
@@ -58,15 +65,15 @@ Examples
 Each of these examples is built upon the previous ones so they should be executed in order.
 
 Package installation
----------------
+--------------------
 * Install Python package in a Notebook inside HyperCube::
 
-	!pip install --user <packageName>
+	%pip install --user <packageName>
 	# restart the kernel
 
 * Uninstall Python package in a Notebook::
 
-	!pip uninstall -y <packageName>
+	%pip uninstall -y <packageName>
 	# restart the kernel
 
 Authentication
@@ -144,7 +151,7 @@ Dataset
 	# Create
 	dataset = project.Dataset.get_or_create(DS_NAME, DS_PATH, delimiter=';')
 	
-	# List and filter
+	# List all datasets belonging to the project
 	print(project.Dataset.filter())
 	#print(project.datasets)
 	

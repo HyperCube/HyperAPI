@@ -1,1 +1,1 @@
-sphinx-build ..\hyper_api build -c .
+sphinx-build ..\HyperAPI\hyper_api build -c .
