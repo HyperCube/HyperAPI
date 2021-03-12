@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    DOCUUID: "29dc2abb-fc26-403e-bad0-0088c7640168"
+    DOCUUID: "v8.0.2"
 
 phases:
   install:
