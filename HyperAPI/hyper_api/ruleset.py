@@ -61,6 +61,7 @@ class RulesetFactory:
     _DISCRETE_MODALITY = "Discrete variable with a modality"
     _DISCRETE = "Discrete variable"
     _CONTINUOUS = "Continuous variable"
+    _CONTINUOUS_RATIO = "Ratio of 2 continuous variables"
 
     def __init__(self, api, project_id):
         self.__api = api
@@ -337,6 +338,8 @@ class RulesetFactory:
         Return:
             Ruleset: Minimized ruleset
         """
+        kpisList = ruleset.kpis.copy()
+
         json = {
             "type": "minimization",
             "datasetId": ruleset.dataset_id,
@@ -352,8 +355,19 @@ class RulesetFactory:
         if _kpiId != score_to_minimize:
             json['params']['kpiId'] = _kpiId
 
-        _kpi_corr = self.__api.Kpi.getkpicorrelation(project_ID=ruleset.project_id)
-        json['params']['kpisList'] = _kpi_corr
+        _kpis_corr = self.__api.Kpi.getkpicorrelation(project_ID=ruleset.project_id) 
+        
+        for _kpi in kpisList:
+            _kpi_corr = next((_kpi_corr for _kpi_corr in _kpis_corr if _kpi_corr.get('_id') == _kpi.get('kpiId')), {})
+            _kpi.update(_kpi_corr) 
+        
+        if kpisList[0].get('kpiType') in [RulesetFactory._CONTINUOUS, RulesetFactory._CONTINUOUS_RATIO]:
+            raise ApiException(
+                f'Unsupported target type in ruleset minimization: {kpisList[0].get("kpiType")}', 
+                f'Supported types: {RulesetFactory._DISCRETE_MODALITY}'
+            )
+
+        json['params']['kpisList'] = kpisList
 
         _ruleset = self.__api.Task.createtask(project_ID=ruleset.project_id, json=json)
         self.__api.handle_work_states(ruleset.project_id, work_type='minimization', work_id=_ruleset.get('_id'))
