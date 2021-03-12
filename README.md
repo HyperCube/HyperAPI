@@ -99,3 +99,23 @@ _on windows_
 _on linux/max_
 
 ```python3 -m unittest discover -s tests -p "*_test.py" -v```
+
+
+# Deployment to production bucket
+ This operation requiert a devops intervention
+```
+python -m h3cli -m security --login <mail adress> 
+# choose HyperCubeDevOps
+python -m h3cli -m security --assume 400837748978/DevCubeAdmin
+aws s3 cp s3://hyperapi.hcube.cool/<version of the api> ./ --recursive
+
+```
+
+
+
+```
+python -m h3cli -m security --login <mail adress> 
+python -m h3cli -m security --assume HyperCubeAdmin
+
+aws s3 cp ./<version of the api> s3://hyperapi-doc/<version of the api> --recursive
+```

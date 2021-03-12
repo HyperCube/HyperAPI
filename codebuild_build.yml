@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    DOCUUID: "29dc2abb-fc26-403e-bad0-0088c7640168"
+    DOCUUID: "v8.0.2"
 
 phases:
   install:
@@ -33,9 +33,3 @@ phases:
       - echo "Generating HyperAPI documentation sources"
       - cd $CODEBUILD_SRC_DIR/docs; chmod +x generate_doc.sh; ./generate_doc.sh $CODEBUILD_SRC_DIR/HyperAPI/hyper_api $DOCUUID
       - python $CODEBUILD_SRC_DIR/scripts/deploy.py -b hyperapi.hcube.cool -p $CODEBUILD_SRC_DIR/docs/$DOCUUID -r eu-central-1
-      - echo "Building HyperAPI Docker image"
-      - cd $CODEBUILD_SRC_DIR/dist
-      - docker build -t hyperapi . --build-arg hyperapiversion=$PACKAGE_VERSION
-      - docker tag hyperapi:latest $ECR_TARGET:$GIT_SOURCE_VERSION
-      - docker push $ECR_TARGET:$GIT_SOURCE_VERSION
-      - echo "Build Done"

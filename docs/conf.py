@@ -45,6 +45,7 @@ extensions = [
 'sphinx.ext.autodoc',
 'sphinx.ext.napoleon'
 ]
+
 napoleon_google_docstring = True
 
 # Add any paths that contain templates here, relative to this directory.
@@ -97,12 +98,12 @@ import guzzle_sphinx_theme
 html_theme_path = guzzle_sphinx_theme.html_theme_path()
 html_theme = 'guzzle_sphinx_theme'
 ## register the theme as an extension to generate a sitemap.xml
-# extensions.append("guzzle_sphinx_theme")
+extensions.append("guzzle_sphinx_theme")
 ## guzzle theme options (see theme.conf for more information)
-# html_theme_options = {
-##    set the name of the project to appear in the sidebar
-    # "project_nav_name": "project name",
-# }
+html_theme_options = {
+    # set the name of the project to appear in the sidebar
+    "project_nav_name": "HyperAPI",
+}
 
 
 # Activate the theme.
@@ -129,8 +130,13 @@ html_static_path = ['_static']
 # defined by theme itself.  Builtin themes are using these templates by
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
-#
-# html_sidebars = {}
+
+html_sidebars = {
+    '**': ['logo-text.html',
+           'localtoc.html',
+           'searchbox.html']
+}
+
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
