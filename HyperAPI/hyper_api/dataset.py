@@ -510,7 +510,7 @@ class Dataset(Base):
     @property
     def is_default(self):
         """
-        Boolean: indicating if this project is the default project.
+        Boolean: indicating if this dataset is the default dataset
         """
         if self._is_deleted:
             return False

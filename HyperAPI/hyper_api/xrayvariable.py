@@ -94,22 +94,37 @@ class XRayVariable(Base):
 
     @property
     def name(self):
+        """
+        str: XRay variable name
+        """
         return self.__json_returned.get('name')
 
     @property
     def is_discrete(self):
+        """
+        Boolean: Indicating if this XRay variable is discrete
+        """
         return self.__json_returned.get('type') == 'D'
 
     @property
     def is_ignored(self):
+        """
+        Boolean: Indicating if this XRay variable is ignored
+        """
         return self.__json_returned.get('ignored')
 
     @property
     def column_id(self):
+        """
+        str: Indicating if this XRay variable is ignored
+        """
         return self.__json_returned.get('column')
 
     @property
     def contrast_rates(self):
+        """
+        Dict: key is variable name (str) and value is contrast_rates (float)
+        """
         contrastRates = self.__json_returned.get('contrastRates')
         return contrastRates
 
